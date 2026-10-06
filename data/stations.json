@@ -1,0 +1,646 @@
+{
+  "_meta": {
+    "source": "Priyom.org station pages",
+    "licence": "CC BY-NC-SA 4.0",
+    "retrieved": "2026-10-06",
+    "reviewStatus": "machine-seeded, needs human review"
+  },
+  "E07": {
+    "name": "English Man 000 000",
+    "priyomUrl": "https://priyom.org/number-stations/english/e07",
+    "category": "english",
+    "language": "English",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "English voice mode of the Russian 7 operator; twice-weekly schedules of 3 transmissions 20 minutes apart, the third dropped for null messages."
+  },
+  "E11": {
+    "name": "Oblique",
+    "priyomUrl": "https://priyom.org/number-stations/english/e11",
+    "category": "english",
+    "language": "English",
+    "operator": "Polish 11 (Poland)",
+    "txSite": {
+      "lat": 52.4294,
+      "lon": 20.8814,
+      "label": "Chotomow near Warsaw, Poland (52 25 46 N, 20 52 53 E)",
+      "confidence": "known"
+    },
+    "typicalDurationMin": 7,
+    "durationSource": "estimate",
+    "notes": "English voice mode of the Polish 11 operator; twice-weekly schedules, mostly null messages (about 4 min), traffic at least monthly."
+  },
+  "S06": {
+    "name": "Russian Man 00000",
+    "priyomUrl": "https://priyom.org/number-stations/slavic/s06",
+    "category": "slavic",
+    "language": "Russian",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Orenburg or Chita, Russia (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 51.77,
+          "lon": 55.1,
+          "label": "Orenburg, Russia"
+        },
+        {
+          "lat": 52.03,
+          "lon": 113.5,
+          "label": "Chita, Russia"
+        }
+      ]
+    },
+    "typicalDurationMin": 6,
+    "durationSource": "estimate",
+    "notes": "Russian voice mode of the Russian 6 operator; 2 transmissions 30-60 minutes apart, repeated the next day when traffic is sent."
+  },
+  "S06c": {
+    "name": "Russian Man",
+    "priyomUrl": "https://priyom.org/number-stations/slavic/s06c",
+    "category": "slavic",
+    "language": "Russian",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Orenburg or Chita, Russia (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 51.77,
+          "lon": 55.1,
+          "label": "Orenburg, Russia"
+        },
+        {
+          "lat": 52.03,
+          "lon": 113.5,
+          "label": "Chita, Russia"
+        }
+      ]
+    },
+    "typicalDurationMin": 4,
+    "durationSource": "page",
+    "notes": "Unscheduled variant using the S06 voice that repeats one 5-digit group for 4 minutes; 2 transmissions 10 minutes apart."
+  },
+  "S11a": {
+    "name": "Cherta",
+    "priyomUrl": "https://priyom.org/number-stations/slavic/s11a",
+    "category": "slavic",
+    "language": "Russian",
+    "operator": "Polish 11 (Poland)",
+    "txSite": {
+      "lat": 52.4294,
+      "lon": 20.8814,
+      "label": "Chotomow near Warsaw, Poland (52 25 46 N, 20 52 53 E)",
+      "confidence": "known"
+    },
+    "typicalDurationMin": 7,
+    "durationSource": "estimate",
+    "notes": "Russian voice mode of the Polish 11 operator, sister of E11; twice-weekly schedules, mostly null messages (about 4 min)."
+  },
+  "V07": {
+    "name": "Spanish Lady 000 000",
+    "priyomUrl": "https://priyom.org/number-stations/other/v07",
+    "category": "other",
+    "language": "Spanish",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 48.48,
+      "lon": 135.07,
+      "label": "Khabarovsk, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "Spanish voice mode of the Russian 7 operator; a single schedule of 3 transmissions 20 minutes apart, based in Khabarovsk."
+  },
+  "V13": {
+    "name": "New Star Broadcasting Station",
+    "priyomUrl": "https://priyom.org/number-stations/other/v13",
+    "category": "other",
+    "language": "Chinese (Mandarin)",
+    "operator": "Taiwan",
+    "txSite": {
+      "lat": 23.7,
+      "lon": 121.0,
+      "label": "Taiwan (country only)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 55,
+    "durationSource": "estimate",
+    "notes": "Taiwanese Mandarin voice station with five numbered programmes aimed at East Asia; starts on the hour and repeats on the half hour."
+  },
+  "V28": {
+    "name": "The Parrot",
+    "priyomUrl": "https://priyom.org/number-stations/other/v28",
+    "category": "other",
+    "language": "Korean (live operators)",
+    "operator": "North Korea",
+    "txSite": {
+      "lat": 40.3,
+      "lon": 127.5,
+      "label": "North Korea (country only)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": null,
+    "durationSource": "estimate",
+    "notes": "North Korean AM station with live Korean operators, twice daily on drifting low frequencies (2.9-5.3 MHz); rarely heard beyond Korea and Japan."
+  },
+  "V32": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/other/v32",
+    "category": "other",
+    "language": "Persian",
+    "operator": "United States (believed; transmitted from a US military base)",
+    "txSite": {
+      "lat": 48.6906,
+      "lon": 9.0867,
+      "label": "Boeblingen near Stuttgart, Germany (48 41 26 N, 9 05 12 E)",
+      "confidence": "known"
+    },
+    "typicalDurationMin": 120,
+    "durationSource": "page",
+    "notes": "Persian voice station that appeared with the 2026 Iran war; 6 fixed 20-minute messages per 2-hour transmission at 02:00 and 18:00 UTC, very low power since April 2026."
+  },
+  "M01": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/morse/m01",
+    "category": "morse",
+    "language": "Morse",
+    "operator": "Russia",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Russia (site not stated; Moscow area used as placeholder)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "Russian Morse station sending 30-group messages on Tue, Thu, Sat and Sun with a seasonal ID; dual-tone keying, no DST adjustment."
+  },
+  "M01a": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/morse/m01a",
+    "category": "morse",
+    "language": "Morse",
+    "operator": "Russia",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Russia (site not stated; Moscow area used as placeholder)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": null,
+    "durationSource": "estimate",
+    "notes": "Irregular, unscheduled variant of M01 with no rigid format."
+  },
+  "M12": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/morse/m12",
+    "category": "morse",
+    "language": "Morse",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow or Khabarovsk, Russia (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 48.48,
+          "lon": 135.07,
+          "label": "Khabarovsk, Russia"
+        }
+      ]
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "Morse mode of the Russian 7 operator; most schedules twice weekly with 3 transmissions 20 minutes apart."
+  },
+  "M14": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/morse/m14",
+    "category": "morse",
+    "language": "Morse",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "Morse mode of the Russian 6 operator, sent at several speeds; same message layout as S06."
+  },
+  "M23": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/morse/m23",
+    "category": "morse",
+    "language": "Morse",
+    "operator": "France (direction finding)",
+    "txSite": {
+      "lat": 48.86,
+      "lon": 2.35,
+      "label": "France, possibly near Paris (direction finding)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "page",
+    "notes": "Slow Morse station of uncertain purpose; usually one 3-digit group repeated for 10+ minutes, on irregular slots that run for a few days."
+  },
+  "F01": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/f01",
+    "category": "digital",
+    "language": "Digital (FSK, ITA2 RTTY compatible, 200 Bd, 500 Hz shift)",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Orenburg, Chita, Russia or Havana, Cuba (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 51.77,
+          "lon": 55.1,
+          "label": "Orenburg, Russia"
+        },
+        {
+          "lat": 52.03,
+          "lon": 113.5,
+          "label": "Chita, Russia"
+        },
+        {
+          "lat": 23.11,
+          "lon": -82.37,
+          "label": "Havana, Cuba"
+        }
+      ]
+    },
+    "typicalDurationMin": 7,
+    "durationSource": "page",
+    "notes": "FSK digital mode of the Russian 6 operator; 2 or 3 transmissions 10 minutes apart, each looping its message for about 7 minutes."
+  },
+  "F03": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/operators/polish-11/digital-modes",
+    "category": "digital",
+    "language": "Digital (FSK / 4FSK)",
+    "operator": "Polish 11 (Poland)",
+    "txSite": {
+      "lat": 52.4294,
+      "lon": 20.8814,
+      "label": "Chotomow near Warsaw, Poland (52 25 46 N, 20 52 53 E)",
+      "confidence": "known"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "FSK digital modes of the Polish 11 operator; all variants (F03j, F03l, ...) share one page. 2 identical transmissions 5 minutes apart, twice weekly."
+  },
+  "F06": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/f06",
+    "category": "digital",
+    "language": "Digital (FSK, 200 Bd, 1000 Hz shift)",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Orenburg, Chita, Russia or Havana, Cuba (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 51.77,
+          "lon": 55.1,
+          "label": "Orenburg, Russia"
+        },
+        {
+          "lat": 52.03,
+          "lon": 113.5,
+          "label": "Chita, Russia"
+        },
+        {
+          "lat": 23.11,
+          "lon": -82.37,
+          "label": "Havana, Cuba"
+        }
+      ]
+    },
+    "typicalDurationMin": 7,
+    "durationSource": "page",
+    "notes": "FSK digital mode of the Russian 6 operator; 3 transmissions 10 minutes apart, each looping its message for about 7 minutes."
+  },
+  "F06a": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/f06a",
+    "category": "digital",
+    "language": "Digital (FSK, 200 Bd, 1000 Hz shift, file transfer)",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Orenburg or Chita, Russia (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 51.77,
+          "lon": 55.1,
+          "label": "Orenburg, Russia"
+        },
+        {
+          "lat": 52.03,
+          "lon": 113.5,
+          "label": "Chita, Russia"
+        }
+      ]
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "File-carrying variant of F06; 3 transmissions 15 minutes apart, always repeated the following day."
+  },
+  "F07": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/f07",
+    "category": "digital",
+    "language": "Digital (MFSK, 5 x 16-tone, with BPSK headers)",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "MFSK digital mode of the Russian 7 operator; twice-weekly schedules of 6 transmissions 10 minutes apart."
+  },
+  "P03": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/operators/polish-11/digital-modes",
+    "category": "digital",
+    "language": "Digital (BPSK / QPSK)",
+    "operator": "Polish 11 (Poland)",
+    "txSite": {
+      "lat": 52.4294,
+      "lon": 20.8814,
+      "label": "Chotomow near Warsaw, Poland (52 25 46 N, 20 52 53 E)",
+      "confidence": "known"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "PSK digital modes of the Polish 11 operator; all variants (P03g, P03i, P03k, P03l, ...) share one page. 2 identical transmissions 5 minutes apart, twice weekly."
+  },
+  "P07": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/p07",
+    "category": "digital",
+    "language": "Digital (OFDM, 8-tone QPSK, with BPSK headers)",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Russia (site not stated; Moscow area used as placeholder)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "OFDM digital mode of the Russian 7 operator; twice-weekly schedules of 6 transmissions 10 minutes apart."
+  },
+  "XPA": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/xpa",
+    "category": "digital",
+    "language": "Digital (MFSK, 17-tone)",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "17-tone MFSK digital mode of the Russian 7 operator; twice-weekly schedules of 3 transmissions 20 minutes apart."
+  },
+  "XPA2": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/xpa2",
+    "category": "digital",
+    "language": "Digital (MFSK, 14-tone)",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "14-tone MFSK digital mode of the Russian 7 operator; twice-weekly schedules of 3 transmissions 20 minutes apart."
+  },
+  "XPB": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/xpb",
+    "category": "digital",
+    "language": "Digital (MFSK, 16-tone)",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 8,
+    "durationSource": "estimate",
+    "notes": "16-tone MFSK digital mode of the Russian 7 operator; twice-weekly schedules of 6 transmissions 10 minutes apart."
+  },
+  "E06": {
+    "name": "English Man 00000",
+    "priyomUrl": "https://priyom.org/number-stations/english/e06",
+    "category": "english",
+    "language": "English",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Orenburg, Smolensk or Chita, Russia (varies by schedule)",
+      "confidence": "approximate",
+      "alternates": [
+        {
+          "lat": 51.77,
+          "lon": 55.1,
+          "label": "Orenburg, Russia"
+        },
+        {
+          "lat": 54.78,
+          "lon": 32.05,
+          "label": "Smolensk, Russia"
+        },
+        {
+          "lat": 52.03,
+          "lon": 113.5,
+          "label": "Chita, Russia"
+        }
+      ]
+    },
+    "typicalDurationMin": 6,
+    "durationSource": "estimate",
+    "notes": "English voice mode of the Russian 6 operator; hibernated on the Priyom index (its page still says active). 2 transmissions 1 hour apart."
+  },
+  "E25": {
+    "name": "Rebeat",
+    "priyomUrl": "https://priyom.org/number-stations/english/e25",
+    "category": "english",
+    "language": "English (Arabic accent)",
+    "operator": "Egypt",
+    "txSite": {
+      "lat": 26.8,
+      "lon": 30.8,
+      "label": "Egypt (country only)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "Hibernated Egyptian station with music intros; numbers last heard 2019, music-only broadcasts on its slots since 2025."
+  },
+  "G06": {
+    "name": "German Lady 00000",
+    "priyomUrl": "https://priyom.org/number-stations/german/g06",
+    "category": "german",
+    "language": "German",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 54.78,
+      "lon": 32.05,
+      "label": "Smolensk, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 6,
+    "durationSource": "estimate",
+    "notes": "Hibernated German voice mode of the Russian 6 operator; retired from regular use in 2021, still heard in tests."
+  },
+  "G07": {
+    "name": "German Lady 000 000",
+    "priyomUrl": "https://priyom.org/number-stations/german/g07",
+    "category": "german",
+    "language": "German",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "Hibernated German voice mode of the Russian 7 operator; retired 2001, one test heard in 2011."
+  },
+  "S07": {
+    "name": "Russian Man 000 000",
+    "priyomUrl": "https://priyom.org/number-stations/slavic/s07",
+    "category": "slavic",
+    "language": "Russian",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "Hibernated Russian voice mode of the Russian 7 operator; retired 2001, heard in tests in 2017 and 2022."
+  },
+  "S25": {
+    "name": "Russian Man \"Control\"",
+    "priyomUrl": "https://priyom.org/number-stations/slavic/s25",
+    "category": "slavic",
+    "language": "Russian",
+    "operator": "Russia",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Moscow, Russia",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 9,
+    "durationSource": "estimate",
+    "notes": "Hibernated, unscheduled Russian voice station using the S06 voice generator; 2 transmissions 10 minutes apart."
+  },
+  "V06": {
+    "name": "Spanish Lady 00000",
+    "priyomUrl": "https://priyom.org/number-stations/other/v06",
+    "category": "other",
+    "language": "Spanish",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Russia (site not stated; Moscow area used as placeholder)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 6,
+    "durationSource": "estimate",
+    "notes": "Hibernated Spanish voice mode of the Russian 6 operator; retired 2000, still heard in occasional tests."
+  },
+  "V07f": {
+    "name": "French Lady 000 000",
+    "priyomUrl": "https://priyom.org/number-stations/other/v07f",
+    "category": "other",
+    "language": "French",
+    "operator": "Russian 7 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Russia (site not stated; Moscow area used as placeholder)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 10,
+    "durationSource": "estimate",
+    "notes": "Hibernated French voice mode of the Russian 7 operator; heard only in tests in 2021 and 2024."
+  },
+  "V23": {
+    "name": "French Man 00000",
+    "priyomUrl": "https://priyom.org/number-stations/other/v23",
+    "category": "other",
+    "language": "French",
+    "operator": "Russian 6 (Russia)",
+    "txSite": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "label": "Russia (site not stated; Moscow area used as placeholder)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 6,
+    "durationSource": "estimate",
+    "notes": "Hibernated French voice mode of the Russian 6 operator; heard only in brief periods, most recently 2021."
+  },
+  "HM01": {
+    "name": "",
+    "priyomUrl": "https://priyom.org/number-stations/digital/hm01",
+    "category": "digital",
+    "language": "Spanish voice + Digital (HamDRM OFDM)",
+    "operator": "DGI (Cuba)",
+    "txSite": {
+      "lat": 22.8699,
+      "lon": -82.3308,
+      "label": "Bejucal, Cuba (unconfirmed)",
+      "confidence": "approximate"
+    },
+    "typicalDurationMin": 23,
+    "durationSource": "page",
+    "notes": "Hibernated Cuban DGI station mixing Spanish voice headers and HamDRM data; off air since a transmitter failure in August 2024."
+  }
+}

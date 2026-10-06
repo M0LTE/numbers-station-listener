@@ -1,0 +1,11 @@
+/bin/
+node_modules/
+web/dist/
+internal/webui/dist/*
+!internal/webui/dist/.keep
+*.db
+*.db-shm
+*.db-wal
+.env
+.idea/
+.vscode/
