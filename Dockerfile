@@ -4,8 +4,6 @@ WORKDIR /src/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web/ ./
-COPY tests/fixtures/priyom-2026-10-06.json /src/tests/fixtures/
-COPY data/stations.json /src/data/
 RUN mkdir -p /src/internal/webui/dist && npm run build
 
 FROM golang:1.26-alpine AS go

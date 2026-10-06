@@ -1,7 +1,6 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type UserConfig } from "vite";
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { mockBackend } from "./mock/plugin.ts";
 
 const outDir = fileURLToPath(new URL("../internal/webui/dist", import.meta.url));
 
@@ -23,10 +22,15 @@ function keepFile(): Plugin {
 // spectrum WebSocket) are proxied there.
 const backend = process.env.NSL_BACKEND;
 
-export default defineConfig({
-  // The mock backend is a dev-server plugin only (apply: "serve"); nothing
-  // under mock/ is imported by src/, so none of it reaches the bundle.
-  plugins: [...(backend ? [] : [mockBackend()]), keepFile()],
+export default defineConfig(async ({ command }): Promise<UserConfig> => ({
+  // The mock backend is for the dev server only. It is imported lazily so a
+  // production build never loads it (it reads test fixtures at import time),
+  // and nothing under mock/ is imported by src/, so none of it reaches the
+  // bundle.
+  plugins: [
+    ...(command === "serve" && !backend ? [(await import("./mock/plugin.ts")).mockBackend()] : []),
+    keepFile(),
+  ],
   server: backend
     ? {
         proxy: {
@@ -49,4 +53,4 @@ export default defineConfig({
     target: "es2022",
     assetsInlineLimit: 0,
   },
-});
+}));
