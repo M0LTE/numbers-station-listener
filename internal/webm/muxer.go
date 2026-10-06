@@ -21,8 +21,9 @@ const AppName = "numbers-station-listener"
 
 // DefaultClusterDuration is used when Config.ClusterDuration is zero. Audio
 // reaches the browser one cluster at a time, so this is the latency the muxer
-// adds; overhead per cluster is about 15 bytes.
-const DefaultClusterDuration = 500 * time.Millisecond
+// adds: a Media Source Extensions player starts after one cluster. Overhead
+// is about 10 bytes per cluster, 0.4 kbit/s at this setting.
+const DefaultClusterDuration = 200 * time.Millisecond
 
 // SeekPreRoll is the Opus seek pre-roll recommended by the Matroska Opus
 // mapping: the decoder needs 80 ms to converge after a discontinuity.

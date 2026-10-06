@@ -4,7 +4,7 @@ import "./style.css";
 
 import type { NowResponse, ScheduleEvent } from "./types";
 import { $ } from "./dom";
-import { localHMS, localZone, now, setServerTime, utcHM, utcHMS } from "./format";
+import { localHMS, localZone, now, setServerTime, ts, utcHM, utcHMS } from "./format";
 import { startFeed, type FeedMode } from "./live";
 import { Player } from "./player";
 import { initReminders, isSet, supported as remindersSupported, toggle as toggleReminder } from "./reminders";
@@ -21,7 +21,7 @@ const actions: RowActions = {
     if (p.eventId === ev.id && p.freqHz === f.hz && (p.state === "playing" || p.state === "connecting")) {
       player.pause();
     } else {
-      player.open(ev, f.hz);
+      player.open({ kind: "event", ev, freqHz: f.hz });
     }
   },
   remind(ev) {
@@ -53,7 +53,7 @@ function render(): void {
 
 function renderFeed(): void {
   const el = $("feed");
-  const upd = data ? `Schedule fetched from Priyom at ${utcHM(Date.parse(data.scheduleUpdated))} UTC.` : "";
+  const upd = data ? `Schedule fetched from Priyom at ${utcHM(ts(data.scheduleUpdated))} UTC.` : "";
   const how: Record<FeedMode, string> = {
     connecting: "Connecting for live updates.",
     live: "This page updates itself.",
@@ -82,6 +82,25 @@ player.onChange = () => {
   const p = player.current;
   foot.textContent = p.state !== "idle" && rx ? `You are hearing ${rx}, ${$("rx-desc").textContent}.` : "";
 };
+
+// Free tune: any frequency the receivers cover, through the best one.
+$("free-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = $("free-khz") as HTMLInputElement;
+  const err = $("free-err");
+  const khz = Number(input.value.trim().replace(",", "."));
+  if (!Number.isFinite(khz) || khz < 10 || khz > 30000) {
+    err.textContent = "Enter a frequency in kHz between 10 and 30000, for example 6070.";
+    err.hidden = false;
+    input.setAttribute("aria-invalid", "true");
+    input.focus();
+    return;
+  }
+  err.hidden = true;
+  input.removeAttribute("aria-invalid");
+  const mode = ($("free-mode") as HTMLSelectElement).value;
+  player.open({ kind: "free", freqHz: Math.round(khz * 1000), mode });
+});
 
 $("clock-tz").textContent = localZone();
 initReminders(render);

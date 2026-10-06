@@ -5,8 +5,16 @@
 let offsetMs = 0;
 
 export function setServerTime(iso: string): void {
-  const t = Date.parse(iso);
+  const t = ts(iso);
   if (!Number.isNaN(t)) offsetMs = t - Date.now();
+}
+
+/**
+ * Parses an RFC 3339 time. The server may send nanosecond fractions, which
+ * not every browser's Date.parse accepts, so cut them to milliseconds.
+ */
+export function ts(iso: string): number {
+  return Date.parse(iso.replace(/(\.\d{3})\d+/, "$1"));
 }
 
 export function now(): number {

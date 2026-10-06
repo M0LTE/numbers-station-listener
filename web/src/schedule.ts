@@ -4,7 +4,7 @@
 
 import type { EventFreq, ScheduleEvent } from "./types";
 import { h } from "./dom";
-import { kHz, localDayTag, localHM, localZone, now, span, utcDayTag, utcHM } from "./format";
+import { kHz, localDayTag, localHM, localZone, now, span, ts, utcDayTag, utcHM } from "./format";
 
 export type Section = "now" | "next" | "later";
 
@@ -46,8 +46,8 @@ export function countdownText(section: Section, startMs: number, endMs: number, 
 }
 
 function timeCells(ev: ScheduleEvent, section: Section, rows: number): HTMLTableCellElement[] {
-  const s = Date.parse(ev.start);
-  const e = Date.parse(ev.end);
+  const s = ts(ev.start);
+  const e = ts(ev.end);
   const ud = utcDayTag(s);
   const ld = localDayTag(s);
   return [
@@ -70,7 +70,7 @@ function stationCell(ev: ScheduleEvent, rows: number): HTMLTableCellElement {
 function signalCell(f: EventFreq | null): HTMLTableCellElement {
   if (!f) return h("td", { class: "c-sig" }, h("span", { class: "sig sig-none" }, "No frequency"));
   const s = f.signal;
-  const at = s.at ? ` at ${utcHM(Date.parse(s.at))} UTC` : "";
+  const at = s.at ? ` at ${utcHM(ts(s.at))} UTC` : "";
   const rx = s.receiverKey ? f.receivers.find((r) => r.key === s.receiverKey)?.callsign : undefined;
   const where = rx ? ` on ${rx}` : "";
   if (s.state === "present") {
@@ -120,7 +120,7 @@ function remindButton(ev: ScheduleEvent, section: Section, a: RowActions): HTMLE
       type: "button",
       class: `btn btn-small btn-quiet remind${set ? " is-set" : ""}`,
       "aria-pressed": set ? "true" : "false",
-      "aria-label": `${set ? "Cancel reminder for" : "Remind me about"} ${ev.station} at ${utcHM(Date.parse(ev.start))} UTC`,
+      "aria-label": `${set ? "Cancel reminder for" : "Remind me about"} ${ev.station} at ${utcHM(ts(ev.start))} UTC`,
       "data-fk": `remind:${ev.id}`,
       onclick: () => a.remind(ev),
     },
@@ -130,7 +130,7 @@ function remindButton(ev: ScheduleEvent, section: Section, a: RowActions): HTMLE
 
 function playButton(ev: ScheduleEvent, f: EventFreq, section: Section, a: RowActions): HTMLElement | null {
   const t = now();
-  const startsSoon = Date.parse(ev.start) - t <= PLAY_LEAD_MS;
+  const startsSoon = ts(ev.start) - t <= PLAY_LEAD_MS;
   if (section !== "now" && !startsSoon) return null;
   const p = a.playing();
   const isCur = p.eventId === ev.id && p.freqHz === f.hz;
@@ -204,7 +204,7 @@ function eventBody(ev: ScheduleEvent, section: Section, a: RowActions): HTMLTabl
 function emptyBody(section: Section, next: ScheduleEvent | undefined): HTMLTableSectionElement {
   let text = "Nothing more is scheduled in the next 24 hours.";
   if (section === "now") {
-    text = next ? `Nothing scheduled is on the air right now. The next transmission, ${next.station}, starts at ${utcHM(Date.parse(next.start))} UTC.` : "Nothing scheduled is on the air right now.";
+    text = next ? `Nothing scheduled is on the air right now. The next transmission, ${next.station}, starts at ${utcHM(ts(next.start))} UTC.` : "Nothing scheduled is on the air right now.";
   } else if (section === "next") {
     text = "No more transmissions are scheduled today.";
   }

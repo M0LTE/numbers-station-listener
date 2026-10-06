@@ -15,6 +15,7 @@ export class RfWaterfall {
   private row: ImageData | null = null;
   private row32: Uint32Array | null = null;
   private mode = "";
+  private stationHz = 0;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -41,10 +42,16 @@ export class RfWaterfall {
     this.pass.hidden = true;
   }
 
-  setHeader(hd: SpectrumHeader, mode: string): void {
+  /**
+   * stationHz is the station's listed frequency, where the red marker goes.
+   * The header's tunedHz is the receiver's dial, which the passband hangs off;
+   * for data modes the dial sits 1500 Hz below the listed frequency.
+   */
+  setHeader(hd: SpectrumHeader, mode: string, stationHz: number): void {
     const geometryChanged = !this.header || this.header.bins !== hd.bins || this.header.startHz !== hd.startHz || this.header.binHz !== hd.binHz;
     this.header = hd;
     this.mode = mode;
+    this.stationHz = stationHz || hd.tunedHz;
     if (geometryChanged) {
       this.canvas.width = hd.bins;
       this.canvas.height = RF_ROWS;
@@ -62,16 +69,16 @@ export class RfWaterfall {
     const pct = (hz: number): number => ((hz - hd.startHz) / spanHz) * 100;
 
     this.marker.hidden = false;
-    this.marker.style.left = `${pct(hd.tunedHz)}%`;
+    this.marker.style.left = `${pct(this.stationHz)}%`;
 
-    // Rough receive passband for the mode, drawn on the scale.
+    // Receive passband for the mode relative to the dial, drawn on the scale.
     const pb: Record<string, [number, number]> = {
       usb: [300, 2700],
       lsb: [-2700, -300],
       am: [-4500, 4500],
       sam: [-4500, 4500],
-      cwu: [-250, 250],
-      cwl: [-250, 250],
+      cwu: [-450, 450],
+      cwl: [-450, 450],
     };
     const band = pb[mode];
     if (band) {

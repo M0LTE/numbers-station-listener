@@ -8,10 +8,11 @@
 // WebSocket requests then carry. Loading the page without parameters resets
 // everything to the happy path.
 //
-//   audio=ok|503|busy|502|fail-first|eof|eof-first
-//       503/busy/502: every receiver fails; fail-first: only the best ranked
-//       one does (shows the automatic fallback); eof: every stream ends after
-//       about 16 s; eof-first: only the best one does.
+//   audio=ok|503|busy|502|404|fail-first|eof|eof-first
+//       503 (rejected), busy (receiver_busy), 502 (upstream), 404
+//       (no_channel): every receiver fails that way; fail-first: only the
+//       best ranked one is rejected (shows the automatic fallback); eof:
+//       every stream ends after 8 s; eof-first: only the best one does.
 //   spectrogram=404     history PNG missing (strip hides itself)
 //   hist=0              capabilities.historicalSpectrogram false
 //   spectrum=off|error  liveSpectrum false, or an error frame after 4 s
@@ -27,7 +28,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { randomBytes } from "node:crypto";
 import { buildNow, rank, publicSummary, strip, RECEIVERS, type MockEvent, type RankedReceiver } from "./schedule.ts";
 import { acceptUpgrade, type MockSocket } from "./ws.ts";
-import { RATE, Synth, wavHeader } from "./audio.ts";
+import { CLUSTER_MS, PACKETS_PER_CLUSTER, cluster, webmHeader } from "./webm.ts";
 import { BINS, DB_MAX, DB_MIN, RowSource, SPAN_HZ, spectrogramPng } from "./rf.ts";
 
 const COOKIE = "nslmock";
@@ -51,6 +52,8 @@ interface Channel {
   id: string;
   eventId: string | null;
   freqHz: number;
+  /** Dial frequency sent upstream: data modes sit 1500 Hz up the USB passband. */
+  tunedHz: number;
   mode: string;
   digital: boolean;
   receiver: RankedReceiver;
@@ -154,7 +157,8 @@ async function createChannel(req: IncomingMessage, res: ServerResponse, flags: F
   const id = hash(`${receiver.key}|${freqHz}|${mode}`);
   let ch = channels.get(id);
   if (!ch) {
-    ch = { id, eventId, freqHz, mode, digital, receiver, rank: idx, startMs, audio: 0, spectrum: 0 };
+    const tunedHz = digital ? freqHz - 1500 : freqHz;
+    ch = { id, eventId, freqHz, tunedHz, mode, digital, receiver, rank: idx, startMs, audio: 0, spectrum: 0 };
     channels.set(id, ch);
   }
   const listenerId = randomBytes(8).toString("hex");
@@ -164,6 +168,7 @@ async function createChannel(req: IncomingMessage, res: ServerResponse, flags: F
     listenerId,
     receiver: publicSummary(receiver),
     freqHz,
+    tunedHz: ch.tunedHz,
     mode,
     spanHz: SPAN_HZ,
     capabilities: { historicalSpectrogram: flags.hist !== "0", liveSpectrum: flags.spectrum !== "off" },
@@ -178,32 +183,29 @@ function streamAudio(req: IncomingMessage, res: ServerResponse, ch: Channel, fla
     return json(res, 503, { error: "rejected", reason: "receiver full" });
   }
   if (a === "busy") return json(res, 503, { error: "receiver_busy" });
-  if (a === "502") return json(res, 502, { error: "upstream", reason: "connection reset" });
+  if (a === "502") return json(res, 502, { error: "upstream", reason: "connection reset by the receiver" });
+  if (a === "404") return json(res, 404, { error: "no_channel" });
   res.statusCode = 200;
-  res.setHeader("Content-Type", "audio/wav");
+  res.setHeader("Content-Type", "audio/webm");
   res.setHeader("Cache-Control", "no-store");
   ch.audio++;
-  report(ch, `audio stream opened (range ${req.headers.range ?? "none"})`);
-  const synth = new Synth(kindOf(ch));
-  res.write(wavHeader());
-  // Chrome buffers about 230 KB of a streaming WAV before it reports
-  // metadata, so front-load ten seconds or the mock takes ages to start.
-  res.write(synth.render(Math.round(RATE * 10)));
-  let sent = 0;
+  report(ch, "audio stream opened");
+  // Like the relay: header, then one 200 ms cluster at a time in real time.
+  res.write(webmHeader());
+  let n = 0;
   const t0 = Date.now();
-  const eofAfter = a === "eof" || (a === "eof-first" && ch.rank === 0) ? 6000 : Infinity;
+  const eofAfter = a === "eof" || (a === "eof-first" && ch.rank === 0) ? 8000 : Infinity;
   const timer = setInterval(() => {
     if (res.writableEnded) return;
-    const due = Math.round(((Date.now() - t0) / 1000) * RATE);
-    if (due > sent) {
-      res.write(synth.render(due - sent));
-      sent = due;
+    while ((n + 1) * CLUSTER_MS <= Date.now() - t0 + CLUSTER_MS) {
+      res.write(cluster(n * PACKETS_PER_CLUSTER, PACKETS_PER_CLUSTER, n * CLUSTER_MS));
+      n++;
     }
     if (Date.now() - t0 > eofAfter) {
       log(`audio for ${ch.receiver.callsign}: ending the stream (audio=${a})`);
       res.end();
     }
-  }, 100);
+  }, 50);
   let closed = false;
   const done = (): void => {
     if (closed) return;
@@ -223,11 +225,11 @@ function spectrumSocket(ws: MockSocket, ch: Channel, flags: Flags): void {
   ws.sendText(
     JSON.stringify({
       type: "header",
-      startHz: ch.freqHz - SPAN_HZ / 2,
+      startHz: ch.tunedHz - SPAN_HZ / 2,
       binHz,
       bins: BINS,
-      centerHz: ch.freqHz,
-      tunedHz: ch.freqHz,
+      centerHz: ch.tunedHz,
+      tunedHz: ch.tunedHz,
       dbMin: DB_MIN,
       dbMax: DB_MAX,
     }),

@@ -1,0 +1,362 @@
+[
+  {
+    "topic": "pskr/filter/v2/30m/FT8/WB1DX/PA4HJH/FN32/JO22/291/263",
+    "payload": {
+      "sq": 73468726263,
+      "f": 10137366,
+      "md": "FT8",
+      "rp": -11,
+      "t": 1791326355,
+      "t_tx": 1791326340,
+      "sc": "WB1DX",
+      "sl": "FN32XE",
+      "rc": "PA4HJH",
+      "rl": "JO22UU",
+      "sa": 291,
+      "ra": 263,
+      "b": "30m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/30m/FT8/N2LEE/PA4HJH/EL97/JO22/291/263",
+    "payload": {
+      "sq": 73468726264,
+      "f": 10138184,
+      "md": "FT8",
+      "rp": -14,
+      "t": 1791326355,
+      "t_tx": 1791326340,
+      "sc": "N2LEE",
+      "sl": "EL97FL",
+      "rc": "PA4HJH",
+      "rl": "JO22UU",
+      "sa": 291,
+      "ra": 263,
+      "b": "30m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/15m/FT8/WB0TAX/W5ASW/EM32/EL29/291/291",
+    "payload": {
+      "sq": 73468726270,
+      "f": 21076491,
+      "md": "FT8",
+      "rp": -14,
+      "t": 1791326353,
+      "t_tx": 1791326353,
+      "sc": "WB0TAX",
+      "sl": "em32fj",
+      "rc": "W5ASW",
+      "rl": "EL29kp",
+      "sa": 291,
+      "ra": 291,
+      "b": "15m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/15m/FT8/N6DLC/W5ASW/DM25/EL29/291/291",
+    "payload": {
+      "sq": 73468726271,
+      "f": 21076200,
+      "md": "FT8",
+      "rp": -2,
+      "t": 1791326369,
+      "t_tx": 1791326369,
+      "sc": "N6DLC",
+      "sl": "DM25QA",
+      "rc": "W5ASW",
+      "rl": "EL29kp",
+      "sa": 291,
+      "ra": 291,
+      "b": "15m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/10m/FT8/KK6KC/KE8MXD/DM03/EM89/291/291",
+    "payload": {
+      "sq": 73468726281,
+      "f": 28076273,
+      "md": "FT8",
+      "rp": -10,
+      "t": 1791326340,
+      "t_tx": 1791326325,
+      "sc": "KK6KC",
+      "sl": "DM03UT",
+      "rc": "KE8MXD",
+      "rl": "EM89NV",
+      "sa": 291,
+      "ra": 291,
+      "b": "10m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/10m/FT8/N6IMY/KE8MXD/CM87/EM89/291/291",
+    "payload": {
+      "sq": 73468726282,
+      "f": 28076182,
+      "md": "FT8",
+      "rp": -17,
+      "t": 1791326340,
+      "t_tx": 1791326325,
+      "sc": "N6IMY",
+      "sl": "CM87un16",
+      "rc": "KE8MXD",
+      "rl": "EM89NV",
+      "sa": 291,
+      "ra": 291,
+      "b": "10m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/20m/FT8/AD0CH/KJ4ZCV/EM29/FM05/291/291",
+    "payload": {
+      "sq": 73468726285,
+      "f": 14074554,
+      "md": "FT8",
+      "rp": -16,
+      "t": 1791326355,
+      "t_tx": 1791326340,
+      "sc": "AD0CH",
+      "sl": "EM29OC",
+      "rc": "KJ4ZCV",
+      "rl": "FM05OT",
+      "sa": 291,
+      "ra": 291,
+      "b": "20m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/20m/FT8/AF7NX/KJ4ZCV/CN84/FM05/291/291",
+    "payload": {
+      "sq": 73468726286,
+      "f": 14076418,
+      "md": "FT8",
+      "rp": 3,
+      "t": 1791326355,
+      "t_tx": 1791326340,
+      "sc": "AF7NX",
+      "sl": "CN84KB",
+      "rc": "KJ4ZCV",
+      "rl": "FM05OT",
+      "sa": 291,
+      "ra": 291,
+      "b": "20m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/40m/FT8/HA1BF/KO1U/JN86/FN42/239/291",
+    "payload": {
+      "sq": 73468726297,
+      "f": 7075473,
+      "md": "FT8",
+      "rp": -11,
+      "t": 1791326445,
+      "t_tx": 1791326445,
+      "sc": "HA1BF",
+      "sl": "JN86LL",
+      "rc": "KO1U",
+      "rl": "FN42ls09ps",
+      "sa": 239,
+      "ra": 291,
+      "b": "40m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/40m/FT8/NE6CG/KO1U/EL87/FN42/291/291",
+    "payload": {
+      "sq": 73468726298,
+      "f": 7075973,
+      "md": "FT8",
+      "rp": 3,
+      "t": 1791326457,
+      "t_tx": 1791326457,
+      "sc": "NE6CG",
+      "sl": "EL87PU",
+      "rc": "KO1U",
+      "rl": "FN42ls09ps",
+      "sa": 291,
+      "ra": 291,
+      "b": "40m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/160m/FT8/DM5EE/N4DB/JO52/FM07/230/291",
+    "payload": {
+      "sq": 73468726315,
+      "f": 1844642,
+      "md": "FT8",
+      "rp": -16,
+      "t": 1791326415,
+      "t_tx": 1791326400,
+      "sc": "DM5EE",
+      "sl": "JO52HI",
+      "rc": "N4DB",
+      "rl": "FM07oi14",
+      "sa": 230,
+      "ra": 291,
+      "b": "160m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/160m/FT8/CU2AP/N4DB/HM77/FM07/149/291",
+    "payload": {
+      "sq": 73468726316,
+      "f": 1845512,
+      "md": "FT8",
+      "rp": -19,
+      "t": 1791326415,
+      "t_tx": 1791326400,
+      "sc": "CU2AP",
+      "sl": "HM77ET",
+      "rc": "N4DB",
+      "rl": "FM07oi14",
+      "sa": 149,
+      "ra": 291,
+      "b": "160m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/12m/FT8/K4YMY/VE7OG/EM67/CN89/291/1",
+    "payload": {
+      "sq": 73468726320,
+      "f": 24915995,
+      "md": "FT8",
+      "rp": -3,
+      "t": 1791326324,
+      "t_tx": 1791326324,
+      "sc": "K4YMY",
+      "sl": "EM67LL",
+      "rc": "VE7OG",
+      "rl": "CN89KG",
+      "sa": 291,
+      "ra": 1,
+      "b": "12m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/12m/FT8/WL7E/VE7OG/CM98/CN89/291/1",
+    "payload": {
+      "sq": 73468726321,
+      "f": 24917103,
+      "md": "FT8",
+      "rp": -19,
+      "t": 1791326355,
+      "t_tx": 1791326355,
+      "sc": "WL7E",
+      "sl": "CM98HT",
+      "rc": "VE7OG",
+      "rl": "CN89KG",
+      "sa": 291,
+      "ra": 1,
+      "b": "12m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/17m/FT8/JE3EDJ/WCF190/PM74/OF77/339/",
+    "payload": {
+      "sq": 73468726341,
+      "f": 18101172,
+      "md": "FT8",
+      "rp": -9,
+      "t": 1791326160,
+      "t_tx": 1791326145,
+      "sc": "JE3EDJ",
+      "sl": "PM74SN",
+      "rc": "WCF190",
+      "rl": "OF77xw",
+      "sa": 339,
+      "ra": null,
+      "b": "17m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/17m/FT8/JA7QVI/WCF190/QM08/OF77/339/",
+    "payload": {
+      "sq": 73468726344,
+      "f": 18102641,
+      "md": "FT8",
+      "rp": -12,
+      "t": 1791326205,
+      "t_tx": 1791326190,
+      "sc": "JA7QVI",
+      "sl": "QM08ka",
+      "rc": "WCF190",
+      "rl": "OF77xw",
+      "sa": 339,
+      "ra": null,
+      "b": "17m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/80m/FT8/US1EA/EA8-DF4UE/KN78/IL38/288/29",
+    "payload": {
+      "sq": 73468726406,
+      "f": 3574900,
+      "md": "FT8",
+      "rp": -11,
+      "t": 1791326445,
+      "t_tx": 1791326430,
+      "sc": "US1EA",
+      "sl": "KN78MM",
+      "rc": "EA8-DF4UE",
+      "rl": "IL38BP",
+      "sa": 288,
+      "ra": 29,
+      "b": "80m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/80m/FT8/US1EA/EI4HQ/KN78/IO51/288/245",
+    "payload": {
+      "sq": 73468726434,
+      "f": 3574898,
+      "md": "FT8",
+      "rp": -3,
+      "t": 1791326445,
+      "t_tx": 1791326430,
+      "sc": "US1EA",
+      "sl": "KN78MM",
+      "rc": "EI4HQ",
+      "rl": "IO51uu43",
+      "sa": 288,
+      "ra": 245,
+      "b": "80m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/60m/FT8/SP5MXZ/OE3TEC/KO03/JN88/269/206",
+    "payload": {
+      "sq": 73468726539,
+      "f": 5358031,
+      "md": "FT8",
+      "rp": -6,
+      "t": 1791326205,
+      "t_tx": 1791326190,
+      "sc": "SP5MXZ",
+      "sl": "KO03TB",
+      "rc": "OE3TEC",
+      "rl": "JN88am",
+      "sa": 269,
+      "ra": 206,
+      "b": "60m"
+    }
+  },
+  {
+    "topic": "pskr/filter/v2/60m/FT8/F1IQH/OZ1LXL/JN27/JO55/227/221",
+    "payload": {
+      "sq": 73468726805,
+      "f": 5358113,
+      "md": "FT8",
+      "rp": 1,
+      "t": 1791326381,
+      "t_tx": 1791326381,
+      "sc": "F1IQH",
+      "sl": "JN27ra04",
+      "rc": "OZ1LXL",
+      "rl": "JO55SR",
+      "sa": 227,
+      "ra": 221,
+      "b": "60m"
+    }
+  }
+]

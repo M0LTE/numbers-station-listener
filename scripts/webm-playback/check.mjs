@@ -176,6 +176,17 @@ try {
       continue;
     }
     const version = browser.version();
+    // A browser that cannot load the page at all is an environment
+    // problem (seen: a sandbox denying Chrome its sockets), not a muxer one.
+    try {
+      const page = await browser.newPage();
+      await page.goto(base + '/');
+      await page.close();
+    } catch (e) {
+      summary.push(`${c.name} ${version}: NOT AVAILABLE (cannot load the local server: ${String(e).split('\n')[0]})`);
+      await browser.close();
+      continue;
+    }
     if (c.note) summary.push(`${c.name} ${version}: NOTE ${c.note}`);
     for (const s of streams) {
       const page = await browser.newPage();

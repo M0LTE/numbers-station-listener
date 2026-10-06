@@ -1,44 +1,58 @@
 // The player: one channel at a time, with the idle connection policy from
 // docs/brief.md enforced here on the browser side.
 //
-// - A channel is created only when the listener presses Play.
-// - Pause closes the audio request (src removed, load() called, so the HTTP
-//   stream is really aborted) and the spectrum socket, and tells the server
-//   we left. Resume asks for the channel again.
-// - pagehide, a receiver switch, or opening another event closes the
+// - A channel is created only when the listener presses Play (or Listen on
+//   the free tune form).
+// - Pause ends the audio request (the fetch is aborted, or for the plain
+//   <audio src> path the src is removed and load() called) and closes the
+//   spectrum socket, then tells the server we left. Resume asks for the
+//   channel again.
+// - pagehide, a receiver switch, or opening something else closes the
 //   current channel and sends a leave beacon.
-// - A failed or ended stream moves on to the next ranked receiver, once
-//   through the list.
+// - A refused, failed or ended stream moves on to the next ranked receiver,
+//   once through the list.
 
 import type { ChannelResponse, ReceiverSummary, ScheduleEvent, SpectrumError, SpectrumHeader } from "./types";
 import { $, h } from "./dom";
-import { kHz, now, span } from "./format";
+import { kHz, now, span, ts } from "./format";
 import { AudioScope, RfWaterfall, loadHistory } from "./scopes";
+import { LiveAudio, type StreamFailure } from "./stream";
 
 type State = "idle" | "connecting" | "playing" | "paused" | "failed";
+
+/** What is being listened to: a scheduled transmission or a free tune. */
+export type Target = { kind: "event"; ev: ScheduleEvent; freqHz: number } | { kind: "free"; freqHz: number; mode: string };
 
 const START_TIMEOUT_MS = 15_000;
 const HISTORY_REFRESH_MS = 60_000;
 
+function sameTarget(a: Target | null, b: Target): boolean {
+  if (!a || a.kind !== b.kind || a.freqHz !== b.freqHz) return false;
+  if (a.kind === "event" && b.kind === "event") return a.ev.id === b.ev.id;
+  return a.kind === "free" && b.kind === "free" && a.mode === b.mode;
+}
+
 export class Player {
   private readonly audio = $("audio") as HTMLAudioElement;
+  private readonly live: LiveAudio;
   private actx: AudioContext | null = null;
   private gain: GainNode | null = null;
   private ch: ChannelResponse | null = null;
-  private ev: ScheduleEvent | null = null;
-  private freqHz = 0;
+  private target: Target | null = null;
   private ws: WebSocket | null = null;
   private state: State = "idle";
-  /** Receivers to fall back through, best first, fixed when the event opens. */
+  /** Receivers to fall back through, best first, fixed when the target opens. */
   private ranked: ReceiverSummary[] = [];
   private tried = new Set<string>();
   private gen = 0;
   private startTimer: number | undefined;
   private histTimer: number | undefined;
   private ourPause = false;
+  private volume = 0.8;
   /** Set while falling back, so the note can say what happened once audio starts. */
   private fellBackFrom: string | null = null;
-  private volume = 0.8;
+  /** One silent retry when the server says the channel has expired. */
+  private rejoined = false;
 
   private readonly rf = new RfWaterfall($("rf") as HTMLCanvasElement, $("rf-marker"), $("rf-scale"), $("rf-pass"));
   private readonly af = new AudioScope($("af") as HTMLCanvasElement);
@@ -47,6 +61,7 @@ export class Player {
   onChange: () => void = () => {};
 
   constructor() {
+    this.live = new LiveAudio(this.audio);
     this.rf.clear();
     const a = this.audio;
     a.addEventListener("playing", () => {
@@ -59,12 +74,9 @@ export class Player {
       }
       this.setState("playing");
     });
-    a.addEventListener("error", () => this.streamFailed("could not be reached"));
-    a.addEventListener("ended", () => this.streamFailed("stopped sending audio"));
     a.addEventListener("pause", () => {
       // Paused from outside the page (headset button, OS media controls):
       // treat it exactly like our own Pause so nothing is left open.
-      // The end of the stream also fires "pause" first; let "ended" handle it.
       if (a.ended || a.error) return;
       if (this.ourPause || (this.state !== "playing" && this.state !== "connecting")) return;
       this.pause();
@@ -78,6 +90,7 @@ export class Player {
     vol.addEventListener("input", () => {
       this.volume = Number(vol.value);
       if (this.gain) this.gain.gain.value = this.volume;
+      else this.audio.volume = this.volume;
     });
 
     window.addEventListener("pagehide", () => {
@@ -90,9 +103,9 @@ export class Player {
 
     if ("mediaSession" in navigator) {
       const ms = navigator.mediaSession;
-      const set = (a: MediaSessionAction, f: () => void): void => {
+      const set = (act: MediaSessionAction, f: () => void): void => {
         try {
-          ms.setActionHandler(a, f);
+          ms.setActionHandler(act, f);
         } catch {
           /* action not supported here */
         }
@@ -104,13 +117,14 @@ export class Player {
   }
 
   get current(): { eventId: string | null; freqHz: number; state: State } {
-    return { eventId: this.ev?.id ?? null, freqHz: this.freqHz, state: this.state };
+    const t = this.target;
+    return { eventId: t?.kind === "event" ? t.ev.id : null, freqHz: t?.freqHz ?? 0, state: this.state };
   }
 
-  /** Play from a schedule row. Must be called from the click handler. */
-  open(ev: ScheduleEvent, freqHz: number): void {
+  /** Play a target. Must be called from the click handler. */
+  open(t: Target): void {
     this.ensureAudio();
-    if (this.ev?.id === ev.id && this.freqHz === freqHz && this.ch) {
+    if (sameTarget(this.target, t) && this.ch) {
       if (this.state === "paused" || this.state === "failed") this.resume();
       this.reveal();
       return;
@@ -119,15 +133,16 @@ export class Player {
       this.stopStreams();
       this.leave();
     }
-    this.ev = ev;
-    this.freqHz = freqHz;
+    this.target = t;
     this.ch = null;
     this.ranked = [];
     this.tried.clear();
     this.fellBackFrom = null;
+    this.rejoined = false;
     this.note("");
     this.rf.clear();
     this.af.clear();
+    $("hist-fig").hidden = true;
     this.renderHead();
     $("player").hidden = false;
     $("hint").hidden = true;
@@ -135,24 +150,29 @@ export class Player {
     void this.connect(undefined);
   }
 
-  /** Keep the schedule's copy of the event fresh (end times, signal). */
+  /** Keep the player's copy of the event fresh (end times, signal). */
   refresh(events: ScheduleEvent[]): void {
-    if (!this.ev) return;
-    const e = events.find((x) => x.id === this.ev?.id);
+    const t = this.target;
+    if (t?.kind !== "event") return;
+    const e = events.find((x) => x.id === t.ev.id);
     if (e) {
-      this.ev = e;
+      t.ev = e;
       this.renderHead();
     }
   }
 
   tick(): void {
     const el = $("pl-left");
-    if (!this.ev) return;
-    const t = now();
-    const start = Date.parse(this.ev.start);
-    const end = Date.parse(this.ev.end);
-    if (t < start) el.textContent = `starts in ${span(start - t)}`;
-    else if (t < end) el.textContent = `${span(end - t)} left${this.ev.endEstimated ? " (estimated)" : ""}`;
+    const t = this.target;
+    if (t?.kind !== "event") {
+      el.textContent = "";
+      return;
+    }
+    const n = now();
+    const start = ts(t.ev.start);
+    const end = ts(t.ev.end);
+    if (n < start) el.textContent = `starts in ${span(start - n)}`;
+    else if (n < end) el.textContent = `${span(end - n)} left${t.ev.endEstimated ? " (estimated)" : ""}`;
     else el.textContent = "scheduled end passed";
   }
 
@@ -162,18 +182,19 @@ export class Player {
   }
 
   pause(): void {
-    if (!this.ch) return;
+    if (!this.ch && this.state !== "connecting") return;
     this.stopStreams();
     this.leave();
     this.setState("paused");
   }
 
   resume(): void {
-    if (!this.ev) return;
+    if (!this.target) return;
     this.ensureAudio();
     if (this.state === "playing" || this.state === "connecting") return;
     this.tried.clear();
     this.fellBackFrom = null;
+    this.rejoined = false;
     this.note("");
     void this.connect(this.ch?.receiver.key);
   }
@@ -182,8 +203,7 @@ export class Player {
     this.stopStreams();
     this.leave();
     this.ch = null;
-    this.ev = null;
-    this.freqHz = 0;
+    this.target = null;
     this.setState("idle");
     $("player").hidden = true;
     $("hint").hidden = false;
@@ -197,6 +217,7 @@ export class Player {
     this.leave();
     this.tried.clear();
     this.fellBackFrom = null;
+    this.rejoined = false;
     this.note("");
     void this.connect(key);
   }
@@ -236,8 +257,15 @@ export class Player {
     if (this.actx?.state === "suspended") void this.actx.resume();
   }
 
+  private body(receiverKey: string | undefined): Record<string, unknown> {
+    const t = this.target;
+    if (!t) return {};
+    if (t.kind === "event") return { eventId: t.ev.id, freqHz: t.freqHz, receiverKey };
+    return { freqHz: t.freqHz, mode: t.mode, receiverKey };
+  }
+
   private async connect(receiverKey: string | undefined): Promise<void> {
-    if (!this.ev) return;
+    if (!this.target) return;
     const gen = ++this.gen;
     this.setState("connecting");
     let res: Response;
@@ -245,7 +273,7 @@ export class Player {
       res = await fetch("/api/channels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: this.ev.id, freqHz: this.freqHz, receiverKey }),
+        body: JSON.stringify(this.body(receiverKey)),
       });
     } catch {
       if (gen !== this.gen) return;
@@ -261,13 +289,18 @@ export class Player {
         return;
       }
       this.setState("failed");
-      this.note(res.status === 404 ? "This transmission is no longer in the schedule." : `The server refused to open a channel (HTTP ${res.status}).`);
+      if (this.target.kind === "free") {
+        this.note(res.status === 409 || res.status === 404 ? "No receiver available to this site can tune that frequency." : `The server refused to open a channel (HTTP ${res.status}).`);
+      } else {
+        this.note(res.status === 404 ? "This transmission is no longer in the schedule." : `The server refused to open a channel (HTTP ${res.status}).`);
+      }
       return;
     }
     const ch = (await res.json()) as ChannelResponse;
     if (gen !== this.gen) return;
     this.ch = ch;
     if (this.ranked.length === 0) this.ranked = [ch.receiver, ...ch.alternatives];
+    this.renderHead();
     this.renderReceiver();
     this.startStreams(gen);
   }
@@ -277,7 +310,11 @@ export class Player {
     if (!ch) return;
     const q = `listener=${encodeURIComponent(ch.listenerId)}`;
     this.ourPause = false;
-    this.audio.src = `/listen/${encodeURIComponent(ch.channelId)}/audio.webm?${q}`;
+    this.live.start(`/listen/${encodeURIComponent(ch.channelId)}/audio.webm?${q}`, {
+      failed: (f) => {
+        if (gen === this.gen) this.streamFailed(f);
+      },
+    });
     this.audio.play().catch((err: unknown) => {
       if (gen !== this.gen) return;
       if (err instanceof DOMException && err.name === "NotAllowedError") {
@@ -286,11 +323,11 @@ export class Player {
         this.setState("paused");
         this.note("Your browser blocked playback. Press Play to listen.");
       }
-      // AbortError and friends: a later src change or the error event handles it.
+      // AbortError and friends: a later src change or the stream handler deals with it.
     });
     window.clearTimeout(this.startTimer);
     this.startTimer = window.setTimeout(() => {
-      if (gen === this.gen && this.state === "connecting") this.streamFailed("did not start sending audio");
+      if (gen === this.gen && this.state === "connecting") this.streamFailed({ kind: "network", detail: "timeout" });
     }, START_TIMEOUT_MS);
 
     if (ch.capabilities.liveSpectrum) this.openSpectrum(ch, gen);
@@ -318,7 +355,7 @@ export class Player {
           return;
         }
         if (msg.type === "header") {
-          this.rf.setHeader(msg, ch.mode);
+          this.rf.setHeader(msg, ch.mode, ch.freqHz);
           status.hidden = true;
         } else if (msg.type === "error") {
           status.textContent = `Waterfall stopped: ${msg.reason ?? msg.error}`;
@@ -360,15 +397,13 @@ export class Player {
     load();
   }
 
-  /** Closes the audio request and the spectrum socket. */
+  /** Ends the audio request and closes the spectrum socket. */
   private stopStreams(): void {
     this.gen++;
     window.clearTimeout(this.startTimer);
     window.clearTimeout(this.histTimer);
     this.ourPause = true;
-    this.audio.pause();
-    this.audio.removeAttribute("src");
-    this.audio.load(); // aborts the in-flight HTTP stream
+    this.live.stop();
     if (this.ws) {
       const ws = this.ws;
       this.ws = null;
@@ -392,14 +427,20 @@ export class Player {
     }
   }
 
-  private streamFailed(why: string): void {
+  private streamFailed(f: StreamFailure): void {
     const ch = this.ch;
     if (!ch || (this.state !== "connecting" && this.state !== "playing")) return;
-    if (!this.audio.getAttribute("src")) return;
-    this.tried.add(ch.receiver.key);
+    const call = ch.receiver.callsign;
     this.stopStreams();
     this.leave();
-    this.fallback(`${ch.receiver.callsign} ${why}`);
+    if (f.kind === "http" && f.error === "no_channel" && !this.rejoined) {
+      // The server forgot the channel (a restart, say): ask for it again.
+      this.rejoined = true;
+      void this.connect(ch.receiver.key);
+      return;
+    }
+    this.tried.add(ch.receiver.key);
+    this.fallback(describe(call, f));
   }
 
   private fallback(what: string): void {
@@ -409,6 +450,7 @@ export class Player {
       this.setState("failed");
       const link = this.ch?.receiver.deepLink ?? this.ranked[0]?.deepLink;
       this.note(`${what}. No other receiver is left to try. Press Play to start again${link ? ", or open the receiver's own page" : ""}.`);
+      this.renderReceiver();
       return;
     }
     this.fellBackFrom = what;
@@ -420,13 +462,19 @@ export class Player {
     return this.ranked.find((r) => r.key === key)?.callsign ?? "That receiver";
   }
 
+  private label(): string {
+    const t = this.target;
+    if (!t) return "";
+    return t.kind === "event" ? `${t.ev.station} on ${kHz(t.freqHz)} kHz` : `${kHz(t.freqHz)} kHz`;
+  }
+
   private setState(s: State): void {
     this.state = s;
     const label = s === "playing" || s === "connecting" ? "Pause" : "Play";
     for (const id of ["pl-toggle", "mini-toggle"]) {
       const b = $(id);
       b.textContent = label;
-      b.setAttribute("aria-label", `${label} ${this.ev ? `${this.ev.station} on ${kHz(this.freqHz)} kHz` : ""}`.trim());
+      b.setAttribute("aria-label", `${label} ${this.label()}`.trim());
     }
     const stateText: Record<State, string> = {
       idle: "",
@@ -440,7 +488,8 @@ export class Player {
     const mini = $("mini");
     mini.hidden = s === "idle";
     mini.dataset.state = s;
-    if (this.ev) $("mini-what").textContent = `${this.ev.station} ${kHz(this.freqHz)} kHz`;
+    const t = this.target;
+    if (t) $("mini-what").textContent = t.kind === "event" ? `${t.ev.station} ${kHz(t.freqHz)} kHz` : `${kHz(t.freqHz)} kHz ${t.mode.toUpperCase()}`;
     if ("mediaSession" in navigator) {
       navigator.mediaSession.playbackState = s === "playing" ? "playing" : s === "idle" ? "none" : "paused";
     }
@@ -454,22 +503,38 @@ export class Player {
   }
 
   private renderHead(): void {
-    const ev = this.ev;
-    if (!ev) return;
-    $("pl-des").textContent = ev.station;
-    $("pl-name").textContent = ev.stationName || "";
-    $("pl-freq").textContent = kHz(this.freqHz);
-    $("pl-mode").textContent = ev.priyomMode + (ev.digital ? " (digital)" : "");
-    const tgt = $("pl-target");
-    tgt.textContent = ev.target ? `Target: ${ev.target}` : "";
-    tgt.hidden = !ev.target;
-    $("pl-digital").hidden = !ev.digital;
+    const t = this.target;
+    if (!t) return;
     const pri = $("pl-priyom") as HTMLAnchorElement;
-    if (ev.priyomUrl) {
-      pri.href = ev.priyomUrl;
-      pri.hidden = false;
+    const tgt = $("pl-target");
+    const dig = $("pl-digital");
+    $("pl-freq").textContent = kHz(t.freqHz);
+    if (t.kind === "event") {
+      const ev = t.ev;
+      $("pl-des").textContent = ev.station;
+      $("pl-name").textContent = ev.stationName || "";
+      $("pl-mode").textContent = ev.priyomMode + (ev.digital ? " (data)" : "");
+      tgt.textContent = ev.target ? `Target: ${ev.target}` : "";
+      tgt.hidden = !ev.target;
+      if (ev.priyomUrl) {
+        pri.href = ev.priyomUrl;
+        pri.hidden = false;
+      } else {
+        pri.hidden = true;
+      }
+      dig.hidden = !ev.digital;
+      if (ev.digital) {
+        const dial = this.ch?.tunedHz;
+        const where = dial && dial !== t.freqHz ? ` The receiver is tuned to ${kHz(dial)} kHz USB, so the tones sit in the middle of what you hear.` : "";
+        dig.textContent = `A data mode: you will hear the raw tones, and decoding needs separate software.${where}`;
+      }
     } else {
+      $("pl-des").textContent = "Free tune";
+      $("pl-name").textContent = "";
+      $("pl-mode").textContent = t.mode.toUpperCase();
+      tgt.hidden = true;
       pri.hidden = true;
+      dig.hidden = true;
     }
     this.tick();
   }
@@ -492,8 +557,8 @@ export class Player {
     }
     const top = this.ranked.slice(0, 3);
     if (!top.some((r) => r.key === rx.key)) top.push(rx);
-    const list = $("rx-list");
-    list.replaceChildren(
+    $("rx-switch").hidden = top.length < 2;
+    $("rx-list").replaceChildren(
       ...top.map((r) => {
         const cur = r.key === rx.key;
         return h(
@@ -509,8 +574,8 @@ export class Player {
             },
             h("span", { class: "rx-call" }, r.callsign),
             h("span", { class: "rx-loc" }, r.location),
-            h("span", { class: "rx-dist" }, typeof r.distanceKm === "number" ? `${r.distanceKm.toLocaleString("en-GB")} km` : ""),
-            this.tried.has(r.key) && !cur ? h("span", { class: "rx-failed" }, "did not respond") : null,
+            h("span", { class: "rx-dist" }, typeof r.distanceKm === "number" ? `${Math.round(r.distanceKm).toLocaleString("en-GB")} km` : ""),
+            this.tried.has(r.key) && !cur ? h("span", { class: "rx-failed" }, "did not work") : null,
           ),
         );
       }),
@@ -519,17 +584,42 @@ export class Player {
   }
 
   private updateMediaSession(): void {
-    if (!("mediaSession" in navigator) || !this.ev || !this.ch) return;
-    const ev = this.ev;
+    const t = this.target;
+    if (!("mediaSession" in navigator) || !t || !this.ch) return;
     const rx = this.ch.receiver;
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: `${ev.station}${ev.stationName ? ` ${ev.stationName}` : ""}`,
-        artist: `${kHz(this.freqHz)} kHz ${ev.priyomMode}`,
+        title: t.kind === "event" ? `${t.ev.station}${t.ev.stationName ? ` ${t.ev.stationName}` : ""}` : `${kHz(t.freqHz)} kHz`,
+        artist: t.kind === "event" ? `${kHz(t.freqHz)} kHz ${t.ev.priyomMode}` : t.mode.toUpperCase(),
         album: `Receiver ${rx.callsign}, ${rx.location}`,
       });
     } catch {
       /* MediaMetadata missing */
     }
+  }
+}
+
+/** Plain-language reason a receiver's stream did not work. */
+function describe(call: string, f: StreamFailure): string {
+  switch (f.kind) {
+    case "http":
+      switch (f.error) {
+        case "receiver_busy":
+          return `${call} has no free slot for this site right now`;
+        case "rejected":
+          return `${call} turned the connection down${f.reason ? ` (${f.reason})` : ""}`;
+        case "upstream":
+          return `${call} could not be reached${f.reason ? ` (${f.reason})` : ""}`;
+        case "no_channel":
+          return `The channel on ${call} expired`;
+        default:
+          return `${call} could not be used (HTTP ${f.status})`;
+      }
+    case "eof":
+      return `${call} ended the session (it may have reached its time limit)`;
+    case "network":
+      return f.detail === "timeout" ? `${call} did not start sending audio` : `The connection to ${call} dropped`;
+    case "media":
+      return `The audio from ${call} could not be played`;
   }
 }

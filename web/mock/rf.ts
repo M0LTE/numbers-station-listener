@@ -72,7 +72,9 @@ export class RowSource {
       } else if (this.kind === "cw") {
         if (cwOn && Math.abs(off) < this.binHz * 1.5) add(-74 + qsb);
       } else {
-        const tone = fskMark ? 85 : -85;
+        // Data modes are tuned 1500 Hz below the listed frequency, so the
+        // 170 Hz shift pair sits mid-passband around +1500 Hz.
+        const tone = 1500 + (fskMark ? 85 : -85);
         if (Math.abs(off - tone) < this.binHz * 1.5) add(-78 + qsb);
       }
       out[i] = toByte(10 * Math.log10(p));
@@ -91,12 +93,13 @@ function chunk(type: string, data: Buffer): Buffer {
 }
 
 /**
- * A recorded-spectrogram PNG in UberSDR's orientation: one row per minute,
- * oldest at the top; columns run up in frequency, centred on the channel.
+ * A recorded-spectrogram PNG shaped like the relay's: one row per minute,
+ * oldest at the top; columns run up in frequency, about 7.3 kHz each, six
+ * columns (about 44 kHz) centred on the channel.
  * `startedAgoMin` is how long ago the transmission began (null if it has not).
  */
 export function spectrogramPng(minutes: number, startedAgoMin: number | null, seed: number): Buffer {
-  const width = 31;
+  const width = 6;
   const height = minutes;
   const raw = Buffer.alloc((width * 3 + 1) * height);
   const rnd = (k: number): number => {
@@ -109,11 +112,11 @@ export function spectrogramPng(minutes: number, startedAgoMin: number | null, se
     for (let x = 0; x < width; x++) {
       let db = -112 + (rnd(y * 131 + x) - 0.5) * 8;
       if (startedAgoMin !== null && ago <= startedAgoMin) {
-        if (x === 15) db = -76 + (rnd(y) - 0.5) * 6;
-        else if (x === 16) db = -96 + (rnd(y + 7) - 0.5) * 6;
+        if (x === 3) db = -76 + (rnd(y) - 0.5) * 6;
+        else if (x === 2) db = -97 + (rnd(y + 7) - 0.5) * 6;
       }
-      if (x === 4 && rnd(y * 3) > 0.3) db = -92;
-      if (x === 23 && ago > 12 && ago < 22) db = -88 + (rnd(y * 5) - 0.5) * 4;
+      if (x === 0 && rnd(y * 3) > 0.3) db = -92;
+      if (x === 5 && ago > 12 && ago < 22) db = -88 + (rnd(y * 5) - 0.5) * 4;
       const v = toByte(db);
       const o = y * (width * 3 + 1) + 1 + x * 3;
       raw[o] = WATERFALL_RGB[v * 3];

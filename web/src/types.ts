@@ -75,6 +75,8 @@ export interface ChannelResponse {
   listenerId: string;
   receiver: ReceiverSummary;
   freqHz: number;
+  /** Dial frequency sent upstream; for data modes 1500 Hz below freqHz, in USB. */
+  tunedHz?: number;
   mode: string;
   spanHz: number;
   capabilities: Capabilities;

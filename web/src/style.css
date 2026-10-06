@@ -1093,6 +1093,90 @@ figcaption {
   }
 }
 
+/* Free tune: small and below everything else. */
+
+.free {
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+}
+
+.free-h {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-stretch: 75%;
+}
+
+.free-intro {
+  margin: 4px 0 12px;
+  font-size: 0.875rem;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+.free-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 16px;
+}
+
+.free-field {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.free-input {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--ink);
+}
+
+.free-field input,
+.free-field select {
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.4em 0.55em;
+}
+
+.free-field input {
+  width: 8.5ch;
+  font-family: var(--mono);
+  font-stretch: 75%;
+}
+
+.free-field input:hover,
+.free-field select:hover {
+  border-color: var(--ink);
+}
+
+.free-field input[aria-invalid="true"] {
+  border-color: var(--accent);
+}
+
+.free-unit {
+  font-size: 0.875rem;
+}
+
+.free-err {
+  margin: 8px 0 0;
+  color: var(--accent);
+  font-size: 0.875rem;
+}
+
+.free-err[hidden],
+.rx-switch[hidden] {
+  display: none;
+}
+
 /* Footer */
 
 .foot {

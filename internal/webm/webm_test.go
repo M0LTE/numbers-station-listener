@@ -171,7 +171,7 @@ func (r *recorder) Flush()                      { r.flushes++ }
 func TestRoundTripStructure(t *testing.T) {
 	pkts := readRec(t, v3Fixture, 21)
 	var out recorder
-	m := NewMuxer(&out, Config{Channels: 1, InputSampleRate: 12000, PreSkip: 312})
+	m := NewMuxer(&out, Config{Channels: 1, InputSampleRate: 12000, PreSkip: 312, ClusterDuration: 500 * time.Millisecond})
 	if out.Len() != 0 {
 		t.Fatalf("NewMuxer wrote %d bytes before any packet", out.Len())
 	}
@@ -268,6 +268,22 @@ func TestRoundTripStructure(t *testing.T) {
 	}
 	if m.Elapsed() != 2*time.Second {
 		t.Errorf("Elapsed %v", m.Elapsed())
+	}
+}
+
+func TestDefaultClusterDuration(t *testing.T) {
+	var out recorder
+	m := NewMuxer(&out, Config{Channels: 1})
+	n := int(time.Second / (20 * time.Millisecond))
+	for i := 0; i < n; i++ {
+		if err := m.WritePacket(celtSilence, 0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ps := parseStream(t, out.Bytes())
+	want := int(time.Second / DefaultClusterDuration)
+	if len(ps.clusters) != want || len(ps.blocks) != n {
+		t.Fatalf("1 s at the default: %d clusters, %d blocks; want %d, %d", len(ps.clusters), len(ps.blocks), want, n)
 	}
 }
 

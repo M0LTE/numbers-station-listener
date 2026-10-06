@@ -2,7 +2,7 @@
 // setTimeout, so the tab has to stay open; kept in localStorage so a reload
 // keeps them. Permission is asked for only when someone clicks the button.
 
-import { kHz, now, utcHM } from "./format";
+import { kHz, now, ts, utcHM } from "./format";
 import type { ScheduleEvent } from "./types";
 
 interface Reminder {
@@ -105,8 +105,8 @@ export async function toggle(ev: ScheduleEvent): Promise<string | null> {
   const freqs = ev.freqs.map((f) => kHz(f.hz)).join(", ");
   const r: Reminder = {
     id: ev.id,
-    startMs: Date.parse(ev.start),
-    title: `${ev.station} starts at ${utcHM(Date.parse(ev.start))} UTC`,
+    startMs: ts(ev.start),
+    title: `${ev.station} starts at ${utcHM(ts(ev.start))} UTC`,
     body: [ev.stationName, freqs ? `${freqs} kHz ${ev.priyomMode}` : "Frequency not listed", ev.target ? `Target: ${ev.target}` : ""].filter(Boolean).join("\n"),
   };
   reminders.set(r.id, r);

@@ -82,12 +82,12 @@
             <canvas id="hist" role="img" aria-label="Recorded signal strength around this frequency over the last 30 minutes"></canvas>
           </div>
           <div class="hist-axis mono" aria-hidden="true"><span>30 min ago</span><span>15</span><span>now</span></div>
-          <figcaption>The receiver's own recording of the last 30 minutes around this frequency. A bright band through the middle means the station was already on.</figcaption>
+          <figcaption>The receiver's own recording of the last 30 minutes, one column per minute, roughly 44 kHz wide and centred on the red ticks. It is coarse: each row of pixels covers about 7 kHz, so it shows whether something was on near this frequency, not what. A bright row level with the ticks that runs up to "now" means a signal was already there.</figcaption>
         </figure>
 
         <div class="rx">
           <p class="rx-attr">Heard through <a id="rx-link" href="#" rel="noopener" target="_blank"></a>, <span id="rx-desc"></span>, an UberSDR receiver shared by its operator. <a id="rx-deep" href="#" rel="noopener" target="_blank" hidden></a></p>
-          <div class="rx-switch" role="group" aria-labelledby="rx-label">
+          <div class="rx-switch" id="rx-switch" role="group" aria-labelledby="rx-label">
             <p class="rx-label" id="rx-label">Other receivers ranked for this transmission</p>
             <ul class="rx-list" id="rx-list"></ul>
           </div>
@@ -111,6 +111,30 @@
         </section>
       </div>
       <p class="feed" id="feed"></p>
+
+      <section class="free" aria-labelledby="h-free">
+        <h2 class="free-h" id="h-free">Tune anywhere</h2>
+        <p class="free-intro">Nothing scheduled you want? Listen to any frequency from 10 kHz to 30 MHz through the best available receiver.</p>
+        <form class="free-form" id="free-form" novalidate>
+          <label class="free-field">
+            <span>Frequency</span>
+            <span class="free-input"><input id="free-khz" name="khz" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="6070" aria-describedby="free-err" required /><span class="free-unit">kHz</span></span>
+          </label>
+          <label class="free-field">
+            <span>Mode</span>
+            <select id="free-mode" name="mode">
+              <option value="am">AM</option>
+              <option value="sam">Sync AM</option>
+              <option value="usb">USB</option>
+              <option value="lsb">LSB</option>
+              <option value="cwu">CW (upper)</option>
+              <option value="cwl">CW (lower)</option>
+            </select>
+          </label>
+          <button type="submit" class="btn">Listen</button>
+        </form>
+        <p class="free-err" id="free-err" role="alert" hidden></p>
+      </section>
     </main>
 
     <footer class="foot">
