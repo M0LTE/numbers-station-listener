@@ -54,18 +54,20 @@ A Dockerfile is also provided (`docker build -t nsl . && docker run -p 8080:8080
 
 Both refuse any request carrying Cloudflare headers, so they stay private after the tunnel goes live even though the tunnel connector is on the LAN.
 
-## Going public via Cloudflare Tunnel (planned, not done)
+## Public access via Cloudflare Tunnel (live since 2026-10-06)
 
-The existing tunnel connector runs in proxmox1 CT 103 (`cloudflared`, remotely managed with a token), so no new connector is needed.
+The site is public at **https://numbers.m0lte.uk**.
 
-1. Pick the hostname (for example `numbers.m0lte.uk`) and set `NSL_PUBLIC_URL` to it in `/etc/nsl/nsl.env`.
-2. Remove `NSL_RECEIVER_ALLOW` (or widen it) so public receivers can be used, and restart: `systemctl restart nsl`.
-3. In Cloudflare Zero Trust, Networks, Tunnels, the existing tunnel, Public Hostname: add the hostname with service `http://10.45.0.26:8080`. Cloudflare creates the DNS record.
-4. Add a Cache Rule for the hostname: bypass cache for `/api/*` and `/listen/*`. Static assets under `/assets/` are content-hashed and may be cached.
-5. Check from outside: the schedule loads, `/api/live` streams (SSE), audio plays and the waterfall moves (WebSockets pass through tunnels by default), and `/admin/sessions` returns 404.
+- The tunnel connector is proxmox1 CT 103 (`cloudflared`, remotely managed with a token), tunnel `proxmox-cloudflared` (id `60065efc-b05b-4ce7-87a8-fc64833b1049`). No new connector was needed.
+- Its ingress has `numbers.m0lte.uk -> http://numbers.lan:8080`, inserted before the catch-all 404. The hostname (not the IP) is used so a DHCP change does not break it; `numbers.lan` resolves from CT 103.
+- DNS: proxied CNAME `numbers.m0lte.uk -> 60065efc-b05b-4ce7-87a8-fc64833b1049.cfargotunnel.com`.
+- `/etc/nsl/nsl.env` has `NSL_PUBLIC_URL=https://numbers.m0lte.uk` and no receiver allow list (the pre-go-live copy is `/etc/nsl/nsl.env.pre-golive`).
+- No cache rule was needed: the API and streams send `no-cache` or `no-store`, which Cloudflare honours, and audio, SSE and WebSockets were verified streaming through the tunnel.
 
-Things to know before going live:
+To take it offline again: delete the ingress rule (Zero Trust, Networks, Tunnels, proxmox-cloudflared, Public Hostname) and the DNS record, or just `systemctl stop nsl`.
+
+Things to know:
 
 - Every upstream connection comes from this site's one IP, so per-IP limits on each receiver apply to all listeners combined. The relay shares one session per receiver and frequency among everyone and caps us at 2 per receiver.
-- Consider a DHCP reservation (or static address) for CT 151 so the tunnel target does not move.
+- When a receiver's session time limit runs out we do not reconnect with a fresh session (that would sidestep the operator's limit); the player moves to the next receiver instead.
 - Tell the Priyom team the site exists before publicising it (brief, milestone 0).
