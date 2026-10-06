@@ -1,0 +1,30 @@
+[Unit]
+Description=Numbers Station Listener
+Documentation=https://github.com/M0LTE/numbers-station-listener
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nsl
+Group=nsl
+EnvironmentFile=/etc/nsl/nsl.env
+ExecStart=/opt/nsl/nsl
+Restart=always
+RestartSec=5
+StateDirectory=nsl
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+{
+  "client_ip": "REDACTED",
+  "allowed": true,
+  "session_timeout": 3600,
+  "max_session_time": 3600,
+  "bypassed": false,
+  "allowed_iq_modes": [
+    "iq48"
+  ],
+  "daily_time_used_secs": 0,
+  "daily_time_remaining_secs": -1
+}

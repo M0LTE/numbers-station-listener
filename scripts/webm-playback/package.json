@@ -1,0 +1,12 @@
+{
+  "name": "webm-playback-check",
+  "private": true,
+  "type": "module",
+  "description": "Plays internal/webm output in real browsers. Not part of go test.",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

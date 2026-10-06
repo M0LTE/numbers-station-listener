@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbfcfa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121815" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="Numbers stations on the air now and coming up, from the Priyom schedule, with in-page listening through public shortwave receivers." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Numbers Station Listener</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip" href="#schedule">Skip to the schedule</a>
+    <header class="mast">
+      <div class="wrap mast-in">
+        <h1 class="title"><a href="/">Numbers Station Listener</a></h1>
+        <div class="mini" id="mini" hidden>
+          <span class="mini-what" id="mini-what"></span>
+          <button type="button" class="btn btn-small" id="mini-toggle">Pause</button>
+        </div>
+        <div class="clocks">
+          <p class="clock clock-utc"><span class="clock-zone">UTC</span> <time id="clock-utc" class="mono">--:--:--</time></p>
+          <p class="clock clock-local"><span class="clock-zone" id="clock-tz">Local</span> <time id="clock-local" class="mono">--:--:--</time></p>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap" id="main">
+      <p class="notice" id="notice" role="status" aria-live="polite" hidden></p>
+
+      <section class="player" id="player" aria-labelledby="pl-title" hidden>
+        <div class="pl-head">
+          <div class="pl-id">
+            <h2 class="pl-title" id="pl-title"><span class="pl-des mono" id="pl-des"></span> <span class="pl-name" id="pl-name"></span></h2>
+            <p class="pl-tune">
+              <span class="pl-freq mono" id="pl-freq"></span><span class="pl-unit">kHz</span>
+              <span class="pl-mode" id="pl-mode"></span>
+              <span class="pl-target" id="pl-target"></span>
+            </p>
+            <p class="pl-meta">
+              <span class="pl-state" id="pl-state"></span>
+              <span class="pl-left mono" id="pl-left"></span>
+              <a class="pl-priyom" id="pl-priyom" href="https://priyom.org/" rel="noopener" target="_blank">Station page on Priyom.org</a>
+            </p>
+            <p class="pl-digital" id="pl-digital" hidden>A data mode. You will hear the raw tones; decoding needs separate software.</p>
+          </div>
+          <div class="pl-ctrl">
+            <button type="button" class="btn btn-primary btn-big" id="pl-toggle">Pause</button>
+            <label class="vol"><span>Volume</span> <input type="range" id="pl-vol" min="0" max="1" step="0.01" /></label>
+            <button type="button" class="btn btn-quiet" id="pl-close">Close player</button>
+          </div>
+        </div>
+
+        <p class="pl-note" id="pl-note" role="status" aria-live="polite" hidden></p>
+
+        <div class="scopes">
+          <figure class="scope scope-rf" id="rf-fig">
+            <div class="wf">
+              <canvas id="rf" width="512" height="220" role="img" aria-label="RF waterfall around the tuned frequency, newest at the top"></canvas>
+              <div class="wf-marker" id="rf-marker" hidden></div>
+              <p class="wf-status" id="rf-status" hidden></p>
+            </div>
+            <div class="wf-scale" aria-hidden="true">
+              <div class="wf-pass" id="rf-pass" hidden></div>
+              <div class="wf-ticks" id="rf-scale"></div>
+            </div>
+            <figcaption>Radio spectrum around the tuned frequency (red line), newest at the top. Scale in kHz; the shaded band is what you hear.</figcaption>
+          </figure>
+          <figure class="scope scope-af">
+            <div class="af">
+              <canvas id="af" width="480" height="170" role="img" aria-label="Spectrogram of the audio you are hearing"></canvas>
+              <div class="af-axis" aria-hidden="true"><span>4 kHz</span><span>2</span><span>0</span></div>
+            </div>
+            <figcaption>The audio you are hearing, 0 to 4 kHz, newest on the right.</figcaption>
+          </figure>
+        </div>
+
+        <figure class="history" id="hist-fig" hidden>
+          <div class="hist">
+            <canvas id="hist" role="img" aria-label="Recorded signal strength around this frequency over the last 30 minutes"></canvas>
+          </div>
+          <div class="hist-axis mono" aria-hidden="true"><span>30 min ago</span><span>15</span><span>now</span></div>
+          <figcaption>The receiver's own recording of the last 30 minutes around this frequency. A bright band through the middle means the station was already on.</figcaption>
+        </figure>
+
+        <div class="rx">
+          <p class="rx-attr">Heard through <a id="rx-link" href="#" rel="noopener" target="_blank"></a>, <span id="rx-desc"></span>, an UberSDR receiver shared by its operator. <a id="rx-deep" href="#" rel="noopener" target="_blank" hidden></a></p>
+          <div class="rx-switch" role="group" aria-labelledby="rx-label">
+            <p class="rx-label" id="rx-label">Other receivers ranked for this transmission</p>
+            <ul class="rx-list" id="rx-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <p class="hint" id="hint">Press Play next to a transmission to listen here, through a public shortwave receiver chosen for the path.</p>
+
+      <div id="schedule">
+        <section class="sched" aria-labelledby="h-now">
+          <div class="sched-head"><h2 id="h-now">On now</h2><span class="sched-count" id="c-now"></span></div>
+          <table class="log" id="t-now"></table>
+        </section>
+        <section class="sched" aria-labelledby="h-next">
+          <div class="sched-head"><h2 id="h-next">Up next</h2><span class="sched-count" id="c-next"></span></div>
+          <table class="log" id="t-next"></table>
+        </section>
+        <section class="sched" aria-labelledby="h-later">
+          <div class="sched-head"><h2 id="h-later">Later today</h2><span class="sched-count" id="c-later"></span></div>
+          <table class="log" id="t-later"></table>
+        </section>
+      </div>
+      <p class="feed" id="feed"></p>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot-in">
+        <p>Schedule and station details from <a href="https://priyom.org/" rel="noopener">Priyom.org</a>, used under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener">CC BY-NC-SA 4.0</a>. Each entry links to its station page. Times and frequencies are Priyom's; how long each transmission runs is our estimate.</p>
+        <p>Audio and waterfalls come from public receivers running <a href="https://ubersdr.org/" rel="noopener">UberSDR</a> (<a href="https://github.com/madpsy/ka9q_ubersdr" rel="noopener">source</a>), by Nathan, M9PSY. Thanks to every operator who shares a receiver. <span id="foot-rx"></span></p>
+        <p>This site is non-commercial. Its <a href="https://github.com/m0lte/numbers-station-listener" rel="noopener">source code</a> is free software under the AGPL-3.0.</p>
+      </div>
+    </footer>
+
+    <audio id="audio" preload="none"></audio>
+  </body>
+</html>

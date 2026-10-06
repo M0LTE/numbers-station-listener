@@ -47,23 +47,23 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow, Orenburg or Chita, Russia (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 51.77,
-          "lon": 55.1,
-          "label": "Orenburg, Russia"
-        },
-        {
-          "lat": 52.03,
-          "lon": 113.5,
-          "label": "Chita, Russia"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 6,
     "durationSource": "estimate",
-    "notes": "Russian voice mode of the Russian 6 operator; 2 transmissions 30-60 minutes apart, repeated the next day when traffic is sent."
+    "notes": "Russian voice mode of the Russian 6 operator; 2 transmissions 30-60 minutes apart, repeated the next day when traffic is sent.",
+    "alternates": [
+      {
+        "lat": 51.77,
+        "lon": 55.1,
+        "label": "Orenburg, Russia"
+      },
+      {
+        "lat": 52.03,
+        "lon": 113.5,
+        "label": "Chita, Russia"
+      }
+    ]
   },
   "S06c": {
     "name": "Russian Man",
@@ -75,23 +75,23 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow, Orenburg or Chita, Russia (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 51.77,
-          "lon": 55.1,
-          "label": "Orenburg, Russia"
-        },
-        {
-          "lat": 52.03,
-          "lon": 113.5,
-          "label": "Chita, Russia"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 4,
     "durationSource": "page",
-    "notes": "Unscheduled variant using the S06 voice that repeats one 5-digit group for 4 minutes; 2 transmissions 10 minutes apart."
+    "notes": "Unscheduled variant using the S06 voice that repeats one 5-digit group for 4 minutes; 2 transmissions 10 minutes apart.",
+    "alternates": [
+      {
+        "lat": 51.77,
+        "lon": 55.1,
+        "label": "Orenburg, Russia"
+      },
+      {
+        "lat": 52.03,
+        "lon": 113.5,
+        "label": "Chita, Russia"
+      }
+    ]
   },
   "S11a": {
     "name": "Cherta",
@@ -215,18 +215,18 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow or Khabarovsk, Russia (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 48.48,
-          "lon": 135.07,
-          "label": "Khabarovsk, Russia"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 8,
     "durationSource": "estimate",
-    "notes": "Morse mode of the Russian 7 operator; most schedules twice weekly with 3 transmissions 20 minutes apart."
+    "notes": "Morse mode of the Russian 7 operator; most schedules twice weekly with 3 transmissions 20 minutes apart.",
+    "alternates": [
+      {
+        "lat": 48.48,
+        "lon": 135.07,
+        "label": "Khabarovsk, Russia"
+      }
+    ]
   },
   "M14": {
     "name": "",
@@ -270,28 +270,28 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow, Orenburg, Chita, Russia or Havana, Cuba (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 51.77,
-          "lon": 55.1,
-          "label": "Orenburg, Russia"
-        },
-        {
-          "lat": 52.03,
-          "lon": 113.5,
-          "label": "Chita, Russia"
-        },
-        {
-          "lat": 23.11,
-          "lon": -82.37,
-          "label": "Havana, Cuba"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 7,
     "durationSource": "page",
-    "notes": "FSK digital mode of the Russian 6 operator; 2 or 3 transmissions 10 minutes apart, each looping its message for about 7 minutes."
+    "notes": "FSK digital mode of the Russian 6 operator; 2 or 3 transmissions 10 minutes apart, each looping its message for about 7 minutes.",
+    "alternates": [
+      {
+        "lat": 51.77,
+        "lon": 55.1,
+        "label": "Orenburg, Russia"
+      },
+      {
+        "lat": 52.03,
+        "lon": 113.5,
+        "label": "Chita, Russia"
+      },
+      {
+        "lat": 23.11,
+        "lon": -82.37,
+        "label": "Havana, Cuba"
+      }
+    ]
   },
   "F03": {
     "name": "",
@@ -319,28 +319,28 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow, Orenburg, Chita, Russia or Havana, Cuba (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 51.77,
-          "lon": 55.1,
-          "label": "Orenburg, Russia"
-        },
-        {
-          "lat": 52.03,
-          "lon": 113.5,
-          "label": "Chita, Russia"
-        },
-        {
-          "lat": 23.11,
-          "lon": -82.37,
-          "label": "Havana, Cuba"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 7,
     "durationSource": "page",
-    "notes": "FSK digital mode of the Russian 6 operator; 3 transmissions 10 minutes apart, each looping its message for about 7 minutes."
+    "notes": "FSK digital mode of the Russian 6 operator; 3 transmissions 10 minutes apart, each looping its message for about 7 minutes.",
+    "alternates": [
+      {
+        "lat": 51.77,
+        "lon": 55.1,
+        "label": "Orenburg, Russia"
+      },
+      {
+        "lat": 52.03,
+        "lon": 113.5,
+        "label": "Chita, Russia"
+      },
+      {
+        "lat": 23.11,
+        "lon": -82.37,
+        "label": "Havana, Cuba"
+      }
+    ]
   },
   "F06a": {
     "name": "",
@@ -352,23 +352,23 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow, Orenburg or Chita, Russia (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 51.77,
-          "lon": 55.1,
-          "label": "Orenburg, Russia"
-        },
-        {
-          "lat": 52.03,
-          "lon": 113.5,
-          "label": "Chita, Russia"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 10,
     "durationSource": "estimate",
-    "notes": "File-carrying variant of F06; 3 transmissions 15 minutes apart, always repeated the following day."
+    "notes": "File-carrying variant of F06; 3 transmissions 15 minutes apart, always repeated the following day.",
+    "alternates": [
+      {
+        "lat": 51.77,
+        "lon": 55.1,
+        "label": "Orenburg, Russia"
+      },
+      {
+        "lat": 52.03,
+        "lon": 113.5,
+        "label": "Chita, Russia"
+      }
+    ]
   },
   "F07": {
     "name": "",
@@ -476,28 +476,28 @@
       "lat": 55.76,
       "lon": 37.62,
       "label": "Moscow, Orenburg, Smolensk or Chita, Russia (varies by schedule)",
-      "confidence": "approximate",
-      "alternates": [
-        {
-          "lat": 51.77,
-          "lon": 55.1,
-          "label": "Orenburg, Russia"
-        },
-        {
-          "lat": 54.78,
-          "lon": 32.05,
-          "label": "Smolensk, Russia"
-        },
-        {
-          "lat": 52.03,
-          "lon": 113.5,
-          "label": "Chita, Russia"
-        }
-      ]
+      "confidence": "approximate"
     },
     "typicalDurationMin": 6,
     "durationSource": "estimate",
-    "notes": "English voice mode of the Russian 6 operator; hibernated on the Priyom index (its page still says active). 2 transmissions 1 hour apart."
+    "notes": "English voice mode of the Russian 6 operator; hibernated on the Priyom index (its page still says active). 2 transmissions 1 hour apart.",
+    "alternates": [
+      {
+        "lat": 51.77,
+        "lon": 55.1,
+        "label": "Orenburg, Russia"
+      },
+      {
+        "lat": 54.78,
+        "lon": 32.05,
+        "label": "Smolensk, Russia"
+      },
+      {
+        "lat": 52.03,
+        "lon": 113.5,
+        "label": "Chita, Russia"
+      }
+    ]
   },
   "E25": {
     "name": "Rebeat",

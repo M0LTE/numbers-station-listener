@@ -46,3 +46,22 @@ func TestVariantFallback(t *testing.T) {
 		t.Error("XPAB must not fall back to XPA (no digit before the suffix)")
 	}
 }
+
+func TestAlternatesLoad(t *testing.T) {
+	c, err := Load(repoFile(t, "data/stations.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := 0
+	for _, s := range c.All() {
+		n += len(s.Alternates)
+		for _, a := range s.Alternates {
+			if a.Label == "" {
+				t.Errorf("%s has an alternate site with no label", s.Designator)
+			}
+		}
+	}
+	if n == 0 {
+		t.Fatal("no alternate sites loaded; check the JSON nesting")
+	}
+}
