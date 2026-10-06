@@ -8,10 +8,20 @@ import { localHMS, localZone, now, setServerTime, ts, utcHM, utcHMS } from "./fo
 import { startFeed, type FeedMode } from "./live";
 import { Player } from "./player";
 import { initReminders, isSet, supported as remindersSupported, toggle as toggleReminder } from "./reminders";
-import { renderSection, tickCountdowns, type RowActions } from "./schedule";
+import { groupEvents, renderList, renderTable, tickCountdowns, type RowActions, type Section } from "./schedule";
+import { isNarrow, narrowMq } from "./layout";
 
 let data: NowResponse | null = null;
 let feedMode: FeedMode = "connecting";
+
+// On a phone "Later today" starts folded away; the choice is remembered.
+const LATER_KEY = "nsl.laterOpen";
+let laterOpen = false;
+try {
+  laterOpen = localStorage.getItem(LATER_KEY) === "1";
+} catch {
+  /* storage blocked: stay folded */
+}
 
 const player = new Player();
 
@@ -43,9 +53,37 @@ function render(): void {
   // Re-rendering replaces the buttons; keep keyboard focus where it was.
   const fk = (document.activeElement as HTMLElement | null)?.dataset?.fk;
   const all: ScheduleEvent[] = [...data.now, ...data.next, ...data.later];
-  renderSection($("t-now") as HTMLTableElement, $("c-now"), "now", data.now, actions, data.next[0]);
-  renderSection($("t-next") as HTMLTableElement, $("c-next"), "next", data.next, actions);
-  renderSection($("t-later") as HTMLTableElement, $("c-later"), "later", data.later, actions);
+  const narrow = isNarrow();
+  const sections: Array<[Section, ScheduleEvent[]]> = [
+    ["now", data.now],
+    ["next", data.next],
+    ["later", data.later],
+  ];
+  for (const [sec, events] of sections) {
+    const groups = groupEvents(events);
+    const table = $(`t-${sec}`) as HTMLTableElement;
+    const list = $(`l-${sec}`) as HTMLOListElement;
+    $(`c-${sec}`).textContent = groups.length ? String(groups.length) : "";
+    const folded = narrow && sec === "later" && !laterOpen && groups.length > 0;
+    if (sec === "later") {
+      const btn = $("later-toggle");
+      btn.hidden = !narrow || groups.length === 0;
+      btn.textContent = folded ? `Show ${groups.length} more` : "Show fewer";
+      btn.setAttribute("aria-expanded", folded ? "false" : "true");
+    }
+    if (narrow) {
+      table.replaceChildren();
+      table.hidden = true;
+      list.hidden = folded;
+      if (folded) list.replaceChildren();
+      else renderList(list, sec, groups, actions, data.next[0]);
+    } else {
+      list.replaceChildren();
+      list.hidden = true;
+      table.hidden = false;
+      renderTable(table, sec, groups, actions, data.next[0]);
+    }
+  }
   player.refresh(all);
   if (fk) document.querySelector<HTMLElement>(`[data-fk="${CSS.escape(fk)}"]`)?.focus({ preventScroll: true });
   renderFeed();
@@ -101,6 +139,18 @@ $("free-form").addEventListener("submit", (e) => {
   const mode = ($("free-mode") as HTMLSelectElement).value;
   player.open({ kind: "free", freqHz: Math.round(khz * 1000), mode });
 });
+
+$("later-toggle").addEventListener("click", () => {
+  laterOpen = !laterOpen;
+  try {
+    localStorage.setItem(LATER_KEY, laterOpen ? "1" : "0");
+  } catch {
+    /* not remembered, still works */
+  }
+  render();
+});
+
+narrowMq.addEventListener("change", () => render());
 
 $("clock-tz").textContent = localZone();
 initReminders(render);

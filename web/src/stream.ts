@@ -7,7 +7,10 @@
 // after the first cluster and runs under a second behind. Fetching also lets
 // us read the server's JSON error body.
 //
-// Fallback: plain <audio src> where MSE cannot play WebM/Opus.
+// Order: ManagedMediaSource (iOS Safari 17.1+, also macOS Safari), then
+// MediaSource, then plain <audio src>. If none of them can play WebM/Opus
+// the stream fails as "unsupported" straight away, rather than being
+// mistaken for a receiver fault.
 //
 // stop() aborts the fetch (or removes the src and calls load()), which is
 // what ends the listener's HTTP request and so releases the relay.
@@ -16,7 +19,8 @@ export type StreamFailure =
   | { kind: "http"; status: number; error: string; reason?: string }
   | { kind: "eof" }
   | { kind: "network"; detail: string }
-  | { kind: "media"; detail: string };
+  | { kind: "media"; detail: string }
+  | { kind: "unsupported" };
 
 export interface StreamHandlers {
   failed(f: StreamFailure): void;
@@ -39,13 +43,32 @@ function mediaSourceCtor(): { ctor: MSCtor; managed: boolean } | null {
     /* no location */
   }
   const w = window as unknown as { MediaSource?: MSCtor; ManagedMediaSource?: MSCtor };
-  if (w.MediaSource && w.MediaSource.isTypeSupported(TYPE)) return { ctor: w.MediaSource, managed: false };
-  if (w.ManagedMediaSource && w.ManagedMediaSource.isTypeSupported(TYPE)) return { ctor: w.ManagedMediaSource, managed: true };
+  try {
+    if (w.ManagedMediaSource && w.ManagedMediaSource.isTypeSupported(TYPE)) return { ctor: w.ManagedMediaSource, managed: true };
+  } catch {
+    /* fall through */
+  }
+  try {
+    if (w.MediaSource && w.MediaSource.isTypeSupported(TYPE)) return { ctor: w.MediaSource, managed: false };
+  } catch {
+    /* fall through */
+  }
   return null;
 }
 
-export function usesMse(): boolean {
-  return mediaSourceCtor() !== null;
+function elementCanPlay(): boolean {
+  try {
+    return document.createElement("audio").canPlayType(TYPE) !== "";
+  } catch {
+    return false;
+  }
+}
+
+/** Which path this browser will use: "mms", "mse", "element" or "none". */
+export function streamPath(): "mms" | "mse" | "element" | "none" {
+  const m = mediaSourceCtor();
+  if (m) return m.managed ? "mms" : "mse";
+  return elementCanPlay() ? "element" : "none";
 }
 
 export class LiveAudio {
@@ -56,6 +79,10 @@ export class LiveAudio {
   private handlers: StreamHandlers | null = null;
   private readonly onError = (): void => {
     const e = this.audio.error;
+    if (e && e.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && !this.ms) {
+      this.fail({ kind: "unsupported" });
+      return;
+    }
     this.fail({ kind: "media", detail: e ? `media error ${e.code}${e.message ? `: ${e.message}` : ""}` : "media error" });
   };
   private readonly onEnded = (): void => this.fail({ kind: "eof" });
@@ -70,8 +97,13 @@ export class LiveAudio {
     this.audio.addEventListener("error", this.onError);
     this.audio.addEventListener("ended", this.onEnded);
     const m = mediaSourceCtor();
-    if (m) this.startMse(url, m.ctor, m.managed);
-    else this.audio.src = url;
+    if (m) {
+      this.startMse(url, m.ctor, m.managed);
+    } else if (elementCanPlay()) {
+      this.audio.src = url;
+    } else {
+      queueMicrotask(() => this.fail({ kind: "unsupported" }));
+    }
   }
 
   /** Ends the HTTP request and detaches everything from the element. */
@@ -117,8 +149,8 @@ export class LiveAudio {
     try {
       sb = ms.addSourceBuffer(TYPE);
       sb.mode = "sequence";
-    } catch (e) {
-      this.fail({ kind: "media", detail: `cannot play WebM/Opus here (${String(e)})` });
+    } catch {
+      this.fail({ kind: "unsupported" });
       return;
     }
     const idle = (): Promise<void> =>

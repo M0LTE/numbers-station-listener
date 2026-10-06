@@ -383,3 +383,36 @@ func TestTuneHz(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+func TestPreferCountry(t *testing.T) {
+	mk := func(id, cc string) rank.Candidate {
+		return rank.Candidate{Receiver: model.Receiver{Provider: "fake", ID: id, Country: cc}}
+	}
+	in := []rank.Candidate{mk("py", "py"), mk("gb1", "gb"), mk("at", "at"), mk("gb2", "gb")}
+	got := preferCountry(in, "gb")
+	order := ""
+	for _, c := range got {
+		order += c.Receiver.ID + " "
+	}
+	if order != "gb1 gb2 py at " {
+		t.Fatalf("order = %q", order)
+	}
+	if got[0].Reasons[len(got[0].Reasons)-1] != "in your country" {
+		t.Fatalf("reasons = %v", got[0].Reasons)
+	}
+	if len(in[1].Reasons) != 0 {
+		t.Fatal("input candidates were modified")
+	}
+	if g := preferCountry(in, "jp"); g[0].Receiver.ID != "py" {
+		t.Fatal("no match must leave the ranking alone")
+	}
+	req := httptest.NewRequest("POST", "/", nil)
+	req.Header.Set("Cf-Ipcountry", "GB")
+	if listenerCountry(req) != "gb" {
+		t.Fatal("header not read")
+	}
+	req.Header.Set("Cf-Ipcountry", "XX")
+	if listenerCountry(req) != "" {
+		t.Fatal("XX means unknown")
+	}
+}

@@ -6,8 +6,10 @@ import { WATERFALL_LUT } from "./palette";
 import type { SpectrumHeader } from "./types";
 import { h } from "./dom";
 import { kHz } from "./format";
+import { isNarrow } from "./layout";
 
-const RF_ROWS = 220;
+/** One waterfall row per CSS pixel of height: 220 on a desktop, 140 on a phone. */
+const rfRows = (): number => (isNarrow() ? 140 : 220);
 
 export class RfWaterfall {
   private ctx: CanvasRenderingContext2D;
@@ -54,9 +56,9 @@ export class RfWaterfall {
     this.stationHz = stationHz || hd.tunedHz;
     if (geometryChanged) {
       this.canvas.width = hd.bins;
-      this.canvas.height = RF_ROWS;
+      this.canvas.height = rfRows();
       this.ctx.fillStyle = "#0b0405";
-      this.ctx.fillRect(0, 0, hd.bins, RF_ROWS);
+      this.ctx.fillRect(0, 0, hd.bins, rfRows());
       this.row = this.ctx.createImageData(hd.bins, 1);
       this.row32 = new Uint32Array(this.row.data.buffer);
     }

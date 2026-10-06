@@ -16,7 +16,8 @@ import type { ChannelResponse, ReceiverSummary, ScheduleEvent, SpectrumError, Sp
 import { $, h } from "./dom";
 import { kHz, now, span, ts } from "./format";
 import { AudioScope, RfWaterfall, loadHistory } from "./scopes";
-import { LiveAudio, type StreamFailure } from "./stream";
+import { LiveAudio, streamPath, type StreamFailure } from "./stream";
+import { isNarrow, narrowMq, volumeWorks } from "./layout";
 
 type State = "idle" | "connecting" | "playing" | "paused" | "failed";
 
@@ -53,6 +54,14 @@ export class Player {
   private fellBackFrom: string | null = null;
   /** One silent retry when the server says the channel has expired. */
   private rejoined = false;
+  /**
+   * Route audio through Web Audio for the spectrogram. Not where the OS owns
+   * the volume (iOS): there a page's Web Audio is suspended when the screen
+   * locks, which would silence the stream, and playing on with the screen
+   * off matters more than the picture. ?webaudio=1 or 0 overrides.
+   */
+  private readonly useWebAudio: boolean;
+  private sheetOpen = false;
 
   private readonly rf = new RfWaterfall($("rf") as HTMLCanvasElement, $("rf-marker"), $("rf-scale"), $("rf-pass"));
   private readonly af = new AudioScope($("af") as HTMLCanvasElement);
@@ -61,6 +70,16 @@ export class Player {
   onChange: () => void = () => {};
 
   constructor() {
+    let force: string | null = null;
+    try {
+      force = new URLSearchParams(location.search).get("webaudio");
+    } catch {
+      /* no location */
+    }
+    this.useWebAudio = force === "1" ? true : force === "0" ? false : volumeWorks;
+    $("pl-vol-wrap").hidden = !volumeWorks;
+    $("af-fig").hidden = !this.useWebAudio;
+    $("player").dataset.path = streamPath();
     this.live = new LiveAudio(this.audio);
     this.rf.clear();
     const a = this.audio;
@@ -85,6 +104,17 @@ export class Player {
     $("pl-toggle").addEventListener("click", () => this.toggle());
     $("mini-toggle").addEventListener("click", () => this.toggle());
     $("pl-close").addEventListener("click", () => this.close());
+    $("dock-toggle").addEventListener("click", () => this.toggle());
+    $("dock-close").addEventListener("click", () => this.close());
+    $("dock-open").addEventListener("click", () => this.expand());
+    $("pl-collapse").addEventListener("click", () => this.collapse());
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.sheetOpen) this.collapse();
+    });
+    narrowMq.addEventListener("change", () => {
+      if (!isNarrow() && this.sheetOpen) this.collapse();
+      this.renderDock();
+    });
     const vol = $("pl-vol") as HTMLInputElement;
     vol.value = String(this.volume);
     vol.addEventListener("input", () => {
@@ -126,7 +156,7 @@ export class Player {
     this.ensureAudio();
     if (sameTarget(this.target, t) && this.ch) {
       if (this.state === "paused" || this.state === "failed") this.resume();
-      this.reveal();
+      if (!isNarrow()) this.reveal();
       return;
     }
     if (this.ch) {
@@ -146,7 +176,9 @@ export class Player {
     this.renderHead();
     $("player").hidden = false;
     $("hint").hidden = true;
-    this.reveal();
+    // On a phone the schedule stays put; the dock at the bottom shows what
+    // is playing and opens the full player.
+    if (!isNarrow()) this.reveal();
     void this.connect(undefined);
   }
 
@@ -200,6 +232,7 @@ export class Player {
   }
 
   close(): void {
+    if (this.sheetOpen) this.collapse();
     this.stopStreams();
     this.leave();
     this.ch = null;
@@ -208,6 +241,67 @@ export class Player {
     $("player").hidden = true;
     $("hint").hidden = false;
     if ("mediaSession" in navigator) navigator.mediaSession.metadata = null;
+  }
+
+  /** Phones: show the full player as a sheet over the page. */
+  expand(): void {
+    if (!this.target) return;
+    if (!isNarrow()) {
+      this.reveal();
+      return;
+    }
+    const p = $("player");
+    this.sheetOpen = true;
+    p.classList.add("is-open");
+    p.setAttribute("role", "dialog");
+    p.setAttribute("aria-modal", "true");
+    document.body.classList.add("sheet-open");
+    for (const el of this.background()) el.inert = true;
+    p.scrollTop = 0;
+    $("pl-collapse").focus();
+  }
+
+  collapse(): void {
+    const p = $("player");
+    this.sheetOpen = false;
+    p.classList.remove("is-open");
+    p.removeAttribute("role");
+    p.removeAttribute("aria-modal");
+    document.body.classList.remove("sheet-open");
+    for (const el of this.background()) el.inert = false;
+    if (isNarrow() && !$("dock").hidden) $("dock-open").focus();
+  }
+
+  /** Everything the sheet covers. */
+  private background(): HTMLElement[] {
+    const out: HTMLElement[] = [];
+    for (const el of Array.from(document.body.children)) {
+      if (el.id === "main") {
+        for (const c of Array.from(el.children)) if (c.id !== "player") out.push(c as HTMLElement);
+      } else if (el.tagName !== "AUDIO" && el.tagName !== "SCRIPT") {
+        out.push(el as HTMLElement);
+      }
+    }
+    return out;
+  }
+
+  private renderDock(): void {
+    const dock = $("dock");
+    const t = this.target;
+    const show = this.state !== "idle" && !!t;
+    dock.hidden = !show;
+    dock.dataset.state = this.state;
+    document.body.classList.toggle("has-dock", show);
+    if (!t) return;
+    $("dock-what").textContent = t.kind === "event" ? `${t.ev.station} ${kHz(t.freqHz)} kHz` : `${kHz(t.freqHz)} kHz`;
+    const mode = t.kind === "event" ? t.ev.priyomMode : t.mode.toUpperCase();
+    const rx = this.ch?.receiver.callsign;
+    const st = $("pl-state").textContent ?? "";
+    $("dock-sub").textContent = [mode, rx ? `via ${rx}` : "", st].filter(Boolean).join(", ");
+    const label = this.state === "playing" || this.state === "connecting" ? "Pause" : "Play";
+    const b = $("dock-toggle");
+    b.textContent = label;
+    b.setAttribute("aria-label", `${label} ${this.label()}`.trim());
   }
 
   private switchTo(key: string): void {
@@ -233,6 +327,10 @@ export class Player {
 
   private ensureAudio(): void {
     // Created inside the user's click so browsers let it make sound.
+    if (!this.useWebAudio) {
+      this.audio.volume = this.volume;
+      return;
+    }
     if (!this.actx) {
       try {
         const ctx = new AudioContext();
@@ -433,6 +531,13 @@ export class Player {
     const call = ch.receiver.callsign;
     this.stopStreams();
     this.leave();
+    if (f.kind === "unsupported") {
+      // A browser limitation, not a receiver fault: trying others will not help.
+      this.setState("failed");
+      const link = ch.receiver.deepLink;
+      this.note(`This browser cannot play the audio stream (WebM with Opus).${link ? " You can still listen on the receiver's own page, linked below." : ""}`);
+      return;
+    }
     if (f.kind === "http" && f.error === "no_channel" && !this.rejoined) {
       // The server forgot the channel (a restart, say): ask for it again.
       this.rejoined = true;
@@ -493,6 +598,7 @@ export class Player {
     if ("mediaSession" in navigator) {
       navigator.mediaSession.playbackState = s === "playing" ? "playing" : s === "idle" ? "none" : "paused";
     }
+    this.renderDock();
     this.onChange();
   }
 
@@ -559,6 +665,7 @@ export class Player {
     const top = this.ranked.slice(0, 3);
     if (!top.some((r) => r.key === rx.key)) top.push(rx);
     $("rx-switch").hidden = top.length < 2;
+    this.renderDock();
     $("rx-list").replaceChildren(
       ...top.map((r) => {
         const cur = r.key === rx.key;
@@ -593,6 +700,10 @@ export class Player {
         title: t.kind === "event" ? `${t.ev.station}${t.ev.stationName ? ` ${t.ev.stationName}` : ""}` : `${kHz(t.freqHz)} kHz`,
         artist: t.kind === "event" ? `${kHz(t.freqHz)} kHz ${t.ev.priyomMode}` : t.mode.toUpperCase(),
         album: `Receiver ${rx.callsign}, ${rx.location}`,
+        artwork: [
+          { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+        ],
       });
     } catch {
       /* MediaMetadata missing */
@@ -622,5 +733,7 @@ function describe(call: string, f: StreamFailure): string {
       return f.detail === "timeout" ? `${call} did not start sending audio` : `The connection to ${call} dropped`;
     case "media":
       return `The audio from ${call} could not be played`;
+    case "unsupported":
+      return "This browser cannot play the stream";
   }
 }

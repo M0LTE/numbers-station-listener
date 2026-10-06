@@ -441,11 +441,17 @@ func (s *session) Close() error {
 func (s *session) start(first decoded, dec *opusDecoder, spec *specDecoder) {
 	s.lastAudio.Store(time.Now().UnixNano())
 	s.audio <- first.pkt
-	s.wg.Add(2)
+	// Count every goroutine before starting any: the audio loop can end the
+	// session at once, and shutdown's Wait must not run before an Add, or
+	// a late spectrum loop could send on channels shutdown has closed.
+	n := 2
+	if s.sc != nil {
+		n++
+	}
+	s.wg.Add(n)
 	go s.audioLoop(dec)
 	go s.keepalive()
 	if s.sc != nil {
-		s.wg.Add(1)
 		go s.specLoop(spec)
 	}
 }

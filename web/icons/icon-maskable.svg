@@ -1,0 +1,9 @@
+<!-- Source for public/icon-maskable-512.png: the same design with the scale
+     and marker inside the central safe circle, paper and bands to the edges. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <rect width="48" height="48" fill="#fbfcfa"/>
+  <rect y="10" width="48" height="6" fill="#e7efe3"/>
+  <rect y="22" width="48" height="6" fill="#e7efe3"/>
+  <path d="M11 35h26M15 35v-4M20 35v-3M28 35v-3M33 35v-4" stroke="#1e2b26" stroke-width="2" fill="none"/>
+  <path d="M24 9v27" stroke="#b5231b" stroke-width="3"/>
+</svg>

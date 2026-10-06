@@ -2,12 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#fbfcfa" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#121815" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Numbers stations on the air now and coming up, from the Priyom schedule, with in-page listening through public shortwave receivers." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Numbers" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Numbers Station Listener</title>
     <script type="module" src="/src/main.ts"></script>
   </head>
@@ -31,6 +37,9 @@
       <p class="notice" id="notice" role="status" aria-live="polite" hidden></p>
 
       <section class="player" id="player" aria-labelledby="pl-title" hidden>
+        <div class="pl-bar">
+          <button type="button" class="btn btn-quiet" id="pl-collapse">Hide player</button>
+        </div>
         <div class="pl-head">
           <div class="pl-id">
             <h2 class="pl-title" id="pl-title"><span class="pl-des mono" id="pl-des"></span> <span class="pl-name" id="pl-name"></span></h2>
@@ -48,7 +57,7 @@
           </div>
           <div class="pl-ctrl">
             <button type="button" class="btn btn-primary btn-big" id="pl-toggle">Pause</button>
-            <label class="vol"><span>Volume</span> <input type="range" id="pl-vol" min="0" max="1" step="0.01" /></label>
+            <label class="vol" id="pl-vol-wrap"><span>Volume</span> <input type="range" id="pl-vol" min="0" max="1" step="0.01" /></label>
             <button type="button" class="btn btn-quiet" id="pl-close">Close player</button>
           </div>
         </div>
@@ -68,7 +77,7 @@
             </div>
             <figcaption>Radio spectrum around the tuned frequency (red line), newest at the top. Scale in kHz; the shaded band is what you hear.</figcaption>
           </figure>
-          <figure class="scope scope-af">
+          <figure class="scope scope-af" id="af-fig">
             <div class="af">
               <canvas id="af" width="480" height="170" role="img" aria-label="Spectrogram of the audio you are hearing"></canvas>
               <div class="af-axis" aria-hidden="true"><span>4 kHz</span><span>2</span><span>0</span></div>
@@ -100,14 +109,18 @@
         <section class="sched" aria-labelledby="h-now">
           <div class="sched-head"><h2 id="h-now">On now</h2><span class="sched-count" id="c-now"></span></div>
           <table class="log" id="t-now"></table>
+          <ol class="txl" id="l-now"></ol>
         </section>
         <section class="sched" aria-labelledby="h-next">
           <div class="sched-head"><h2 id="h-next">Up next</h2><span class="sched-count" id="c-next"></span></div>
           <table class="log" id="t-next"></table>
+          <ol class="txl" id="l-next"></ol>
         </section>
         <section class="sched" aria-labelledby="h-later">
           <div class="sched-head"><h2 id="h-later">Later today</h2><span class="sched-count" id="c-later"></span></div>
+          <button type="button" class="btn btn-quiet more-toggle" id="later-toggle" aria-controls="l-later" aria-expanded="false" hidden>Show more</button>
           <table class="log" id="t-later"></table>
+          <ol class="txl" id="l-later"></ol>
         </section>
       </div>
       <p class="feed" id="feed"></p>
@@ -144,6 +157,15 @@
         <p>This site is non-commercial. Its <a href="https://github.com/m0lte/numbers-station-listener" rel="noopener">source code</a> is free software under the AGPL-3.0.</p>
       </div>
     </footer>
+
+    <div class="dock" id="dock" hidden>
+      <button type="button" class="dock-open" id="dock-open" aria-label="Show the player" aria-controls="player">
+        <span class="dock-l1"><span class="dock-mark" aria-hidden="true"></span><span class="dock-what mono" id="dock-what"></span></span>
+        <span class="dock-l2" id="dock-sub"></span>
+      </button>
+      <button type="button" class="btn btn-primary dock-btn" id="dock-toggle">Pause</button>
+      <button type="button" class="btn btn-quiet dock-btn" id="dock-close" aria-label="Stop and close the player">Close</button>
+    </div>
 
     <audio id="audio" preload="none"></audio>
   </body>

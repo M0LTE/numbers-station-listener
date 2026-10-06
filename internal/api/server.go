@@ -352,6 +352,9 @@ func (s *Server) handleCreateChannel(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		cands = rank.Rank(rank.Input{Receivers: s.allowedReceivers(), FreqHz: hz, At: now, Held: s.relay.HeldOn, Weights: s.weights})
+		// A free tune has no transmitter to plan a path from, so hear it
+		// the way the listener would: prefer receivers in their country.
+		cands = preferCountry(cands, listenerCountry(r))
 	}
 	m, err := parseMode(mode)
 	if err != nil {
@@ -416,6 +419,44 @@ func (s *Server) handleCreateChannel(w http.ResponseWriter, r *http.Request) {
 		resp.Alternatives = append(resp.Alternatives, s.receiverView(cands[i].Receiver, &cands[i], hz, m, digital))
 	}
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// listenerCountry is the visitor's country as Cloudflare reports it
+// (lower case ISO 3166 alpha-2), or "" when unknown or not via Cloudflare.
+func listenerCountry(r *http.Request) string {
+	c := strings.ToLower(strings.TrimSpace(r.Header.Get("Cf-Ipcountry")))
+	if len(c) != 2 || c == "xx" || c == "t1" {
+		return ""
+	}
+	return c
+}
+
+// preferCountry moves receivers in country to the front, keeping the
+// ranked order within each group. With no match it changes nothing.
+func preferCountry(cands []rank.Candidate, country string) []rank.Candidate {
+	if country == "" {
+		return cands
+	}
+	out := make([]rank.Candidate, 0, len(cands))
+	for _, c := range cands {
+		if strings.EqualFold(c.Receiver.Country, country) {
+			out = append(out, c)
+		}
+	}
+	if len(out) == 0 {
+		return cands
+	}
+	for _, c := range cands {
+		if !strings.EqualFold(c.Receiver.Country, country) {
+			out = append(out, c)
+		}
+	}
+	for i := range out {
+		if strings.EqualFold(out[i].Receiver.Country, country) {
+			out[i].Reasons = append(append([]string(nil), out[i].Reasons...), "in your country")
+		}
+	}
+	return out
 }
 
 func containsHz(fs []int64, hz int64) bool {
