@@ -4,7 +4,9 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +21,7 @@ import (
 	"github.com/m0lte/numbers-station-listener/internal/probe"
 	"github.com/m0lte/numbers-station-listener/internal/provider"
 	"github.com/m0lte/numbers-station-listener/internal/provider/ubersdr"
+	"github.com/m0lte/numbers-station-listener/internal/pskr"
 	"github.com/m0lte/numbers-station-listener/internal/rank"
 	"github.com/m0lte/numbers-station-listener/internal/relay"
 	"github.com/m0lte/numbers-station-listener/internal/schedule"
@@ -61,6 +64,9 @@ func run(log *slog.Logger) error {
 	}
 
 	weights := rank.DefaultWeights()
+	if cfg.PSKReporter {
+		weights.PSKReporter = 0.1
+	}
 	if cfg.RankWeights != "" {
 		if weights, err = rank.ParseWeights(cfg.RankWeights); err != nil {
 			return err
@@ -98,10 +104,18 @@ func run(log *slog.Logger) error {
 		prober = probe.New(probe.Options{Every: cfg.ProbeEvery, TopK: cfg.ProbeTopK, Logger: log.With("svc", "probe")}, providers...)
 	}
 
+	var pathOpen api.PathOpenFunc
+	var pskrClient *pskr.Client
+	if cfg.PSKReporter {
+		store := pskr.NewStore(pskr.DefaultParams())
+		pskrClient = pskr.NewClient(pskr.Config{Logger: log.With("svc", "pskr")}, store)
+		pathOpen = store.PathOpen
+	}
+
 	srv := api.New(api.Deps{
 		Config: cfg, Logger: log.With("svc", "api"), Catalog: cat,
 		Schedule: sched, Directory: dir, Prober: prober, Relay: rel,
-		Providers: providers, Weights: weights, Static: webui.FS(),
+		Providers: providers, Weights: weights, PathOpen: pathOpen, Static: webui.FS(),
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -114,6 +128,9 @@ func run(log *slog.Logger) error {
 	if prober != nil {
 		go prober.Run(ctx, srv.ProbeTargets)
 	}
+	if pskrClient != nil {
+		go func() { _ = pskrClient.Run(ctx) }()
+	}
 
 	hs := &http.Server{
 		Addr:              cfg.Listen,
@@ -121,8 +138,19 @@ func run(log *slog.Logger) error {
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
-	errc := make(chan error, 1)
+	errc := make(chan error, 2)
 	go func() { errc <- hs.ListenAndServe() }()
+
+	var redirect *http.Server
+	if cfg.RedirectListen != "" {
+		_, port, err := net.SplitHostPort(cfg.Listen)
+		if err != nil {
+			return fmt.Errorf("NSL_LISTEN: %w", err)
+		}
+		redirect = &http.Server{Addr: cfg.RedirectListen, Handler: api.PortRedirect(port), ReadHeaderTimeout: 10 * time.Second}
+		go func() { errc <- redirect.ListenAndServe() }()
+		log.Info("redirecting", "from", cfg.RedirectListen, "toPort", port)
+	}
 
 	select {
 	case err := <-errc:
@@ -138,5 +166,8 @@ func run(log *slog.Logger) error {
 	sctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_ = hs.Shutdown(sctx)
+	if redirect != nil {
+		_ = redirect.Shutdown(sctx)
+	}
 	return nil
 }

@@ -526,7 +526,7 @@ figcaption {
   top: 0;
   bottom: 0;
   width: 0;
-  border-left: 1.5px solid var(--accent);
+  border-left: 2px solid var(--accent);
   pointer-events: none;
 }
 

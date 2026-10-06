@@ -5,7 +5,7 @@
 | What | Where |
 |---|---|
 | Container | proxmox1 (10.45.0.10), CT 151 `numbers`, Debian 13, unprivileged, 2 cores, 1 GB, 8 GB disk, onboot |
-| Address | 10.45.0.26 (DHCP), service on port 8080 |
+| Address | 10.45.0.26 (DHCP), `numbers.lan`; site on port 8080, port 80 redirects to it |
 | Service | systemd unit `nsl`, binary `/opt/nsl/nsl`, user `nsl`, state in `/var/lib/nsl` |
 | Config | `/etc/nsl/nsl.env` (environment variables, see below) |
 | Logs | `journalctl -u nsl` (plain ASCII) |
@@ -28,6 +28,7 @@ A Dockerfile is also provided (`docker build -t nsl . && docker run -p 8080:8080
 | Variable | Default | Meaning |
 |---|---|---|
 | `NSL_LISTEN` | `:8080` | Listen address |
+| `NSL_REDIRECT_LISTEN` | | If set (the container uses `:80`), a plain 302 redirect to the same host on the `NSL_LISTEN` port |
 | `NSL_PUBLIC_URL` | | The site's public URL; goes into the User-Agent |
 | `NSL_CONTACT` | `M0LTE` | Contact in the User-Agent sent to receivers and Priyom |
 | `NSL_DATA_DIR` | | Where the schedule snapshot is kept (so restarts do not need Priyom) |
@@ -43,6 +44,7 @@ A Dockerfile is also provided (`docker build -t nsl . && docker run -p 8080:8080
 | `NSL_RANK_WEIGHTS` | | JSON override, e.g. `{"probe":0.5,"path":0.3,"quality":0.1,"load":0.1}` |
 | `NSL_ADMIN_NETS` | loopback + RFC 1918 | Who may see `/admin/sessions` and `/metrics` |
 | `NSL_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error` |
+| `NSL_PSKR` | `true` | PSKReporter path-open hint (MQTT feed, about 20 MB of memory at most); adds a 0.1 ranking weight |
 | `NSL_PRIYOM_URL`, `NSL_UBERSDR_DIRECTORY` | the real ones | Override for testing |
 
 ## Monitoring

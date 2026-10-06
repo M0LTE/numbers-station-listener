@@ -21,6 +21,7 @@ import (
 
 	"github.com/m0lte/numbers-station-listener/internal/config"
 	"github.com/m0lte/numbers-station-listener/internal/directory"
+	"github.com/m0lte/numbers-station-listener/internal/model"
 	"github.com/m0lte/numbers-station-listener/internal/probe"
 	"github.com/m0lte/numbers-station-listener/internal/provider"
 	"github.com/m0lte/numbers-station-listener/internal/rank"
@@ -40,9 +41,15 @@ type Deps struct {
 	Relay     *relay.Manager
 	Providers []provider.Provider
 	Weights   rank.Weights
+	// PathOpen is the PSKReporter path-open hint; nil when off.
+	PathOpen PathOpenFunc
 	// Static is the built frontend; nil serves nothing at /.
 	Static fs.FS
 }
+
+// PathOpenFunc scores whether the path from a transmitter site to a
+// receiver is open on frequencies near freqHz (see internal/pskr).
+type PathOpenFunc func(tx stations.Site, rx model.Receiver, freqHz int64, now time.Time) (score float64, reason string, ok bool)
 
 // Server implements every route.
 type Server struct {
@@ -55,6 +62,7 @@ type Server struct {
 	relay     *relay.Manager
 	providers map[string]provider.Provider
 	weights   rank.Weights
+	pathOpen  PathOpenFunc
 	static    fs.FS
 
 	hub   *hub
@@ -70,7 +78,7 @@ func New(d Deps) *Server {
 	s := &Server{
 		cfg: d.Config, log: d.Logger, catalog: d.Catalog, sched: d.Schedule,
 		dir: d.Directory, prober: d.Prober, relay: d.Relay,
-		providers: map[string]provider.Provider{}, weights: d.Weights, static: d.Static,
+		providers: map[string]provider.Provider{}, weights: d.Weights, pathOpen: d.PathOpen, static: d.Static,
 		hub: newHub(),
 	}
 	if s.log == nil {

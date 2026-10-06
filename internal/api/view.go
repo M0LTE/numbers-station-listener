@@ -110,6 +110,12 @@ func (s *Server) candidates(ev schedule.Event, st *stations.Station, hz int64, a
 	if st != nil {
 		in.Tx = st.TxSite
 		in.Alternates = st.Alternates
+		if s.pathOpen != nil && st.TxSite.Known() {
+			tx := *st.TxSite
+			in.PathOpen = func(r model.Receiver) (float64, string, bool) {
+				return s.pathOpen(tx, r, hz, at)
+			}
+		}
 	}
 	if withProbes && s.prober != nil {
 		in.Probes = s.prober.Results(hz)

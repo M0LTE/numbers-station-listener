@@ -509,6 +509,7 @@ export class Player {
     const tgt = $("pl-target");
     const dig = $("pl-digital");
     $("pl-freq").textContent = kHz(t.freqHz);
+    $("pl-des").classList.toggle("mono", t.kind === "event");
     if (t.kind === "event") {
       const ev = t.ev;
       $("pl-des").textContent = ev.station;

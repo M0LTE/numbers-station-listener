@@ -113,7 +113,8 @@ Response 200:
   "channelId": "9a8b7c6d5e4f3a2b",
   "listenerId": "7d0c...",            // server-generated, use it for the three routes below
   "receiver": ReceiverSummary,
-  "freqHz": 15388000,
+  "freqHz": 15388000,                 // the listed frequency (draw the station marker here)
+  "tunedHz": 15388000,                // the dial frequency sent upstream; listed minus 1500 Hz for digital modes heard in USB
   "mode": "usb",
   "spanHz": 12000,
   "capabilities": { "historicalSpectrogram": true, "liveSpectrum": true },
@@ -151,7 +152,7 @@ Explicit leave. Also accepted as `POST /api/channels/{channelId}/listeners/{list
 
 ### `GET /listen/{channelId}/spectrogram.png?minutes=30`
 
-Recorded wideband spectrogram of the last `minutes` (5 to 60) around the channel frequency, as a PNG. Served from a shared cache refreshed at most once per 60 s per receiver and frequency band; upstream is never asked more than once per 10 s. 404 if the provider has no history (`capabilities.historicalSpectrogram` false). Does not count as listening and opens no session.
+Recorded wideband spectrogram of the last `minutes` (5 to 60) around the channel frequency, as a PNG. One row per minute, oldest at the top; columns are frequency, about 7.3 kHz each, roughly 44 kHz wide centred on the frequency. Colours are the receiver's own palette. Served from a shared cache refreshed at most once per 60 s per receiver and frequency band; upstream is never asked more than once per 10 s. 404 if the provider has no history (`capabilities.historicalSpectrogram` false). Does not count as listening and opens no session.
 
 ### `GET /api/stations`
 

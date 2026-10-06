@@ -55,18 +55,18 @@ type Spot struct {
 }
 
 type wireSpot struct {
-	Seq  *int64  `json:"sq"`
-	F    *int64  `json:"f"`
-	Md   string  `json:"md"`
-	Rp   *int    `json:"rp"`
-	T    *int64  `json:"t"`
-	Sc   string  `json:"sc"`
-	Sl   string  `json:"sl"`
-	Rc   string  `json:"rc"`
-	Rl   string  `json:"rl"`
-	Sa   *int    `json:"sa"`
-	Ra   *int    `json:"ra"`
-	Band string  `json:"b"`
+	Seq  *int64 `json:"sq"`
+	F    *int64 `json:"f"`
+	Md   string `json:"md"`
+	Rp   *int   `json:"rp"`
+	T    *int64 `json:"t"`
+	Sc   string `json:"sc"`
+	Sl   string `json:"sl"`
+	Rc   string `json:"rc"`
+	Rl   string `json:"rl"`
+	Sa   *int   `json:"sa"`
+	Ra   *int   `json:"ra"`
+	Band string `json:"b"`
 }
 
 // ParseSpot decodes one message payload. Unknown fields are ignored so the

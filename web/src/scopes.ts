@@ -182,6 +182,41 @@ export class AudioScope {
   }
 }
 
+// UberSDR draws its recorded spectrogram in the rainbow "jet" map. Jet is
+// not perceptually ordered, and it clashes with the waterfalls, so map each
+// pixel back to its level and recolour it with the page's own map. Only done
+// when the picture really is jet; anything else is shown as it came.
+const JET: Array<[number, number, number]> = Array.from({ length: 256 }, (_, i) => {
+  const t = i / 255;
+  const c = (x: number): number => Math.round(255 * Math.max(0, Math.min(1, 1.5 - Math.abs(4 * t - x))));
+  return [c(3), c(2), c(1)];
+});
+
+function recolourJet(ctx: CanvasRenderingContext2D, w: number, hgt: number): void {
+  const img = ctx.getImageData(0, 0, w, hgt);
+  const d = img.data;
+  const levels = new Uint8Array(w * hgt);
+  let err = 0;
+  for (let p = 0, i = 0; i < d.length; i += 4, p++) {
+    let best = 0;
+    let bestD = Infinity;
+    for (let k = 0; k < 256; k++) {
+      const [r, g, b] = JET[k];
+      const dist = (d[i] - r) ** 2 + (d[i + 1] - g) ** 2 + (d[i + 2] - b) ** 2;
+      if (dist < bestD) {
+        bestD = dist;
+        best = k;
+      }
+    }
+    levels[p] = best;
+    err += Math.sqrt(bestD);
+  }
+  if (err / levels.length > 24) return; // not jet: leave it alone
+  const out = new Uint32Array(d.buffer);
+  for (let p = 0; p < levels.length; p++) out[p] = WATERFALL_LUT[levels[p]];
+  ctx.putImageData(img, 0, 0);
+}
+
 /**
  * The recorded spectrogram arrives in the receiver's own orientation (one
  * row per minute, oldest at the top, frequency across). Turn it so time runs
@@ -194,13 +229,14 @@ export async function loadHistory(url: string, canvas: HTMLCanvasElement): Promi
     const bmp = await createImageBitmap(await res.blob());
     canvas.width = bmp.height;
     canvas.height = bmp.width;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return false;
     ctx.imageSmoothingEnabled = false;
     ctx.setTransform(0, -1, 1, 0, 0, bmp.width);
     ctx.drawImage(bmp, 0, 0);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     bmp.close();
+    if (canvas.width * canvas.height <= 200_000) recolourJet(ctx, canvas.width, canvas.height);
     return true;
   } catch {
     return false;

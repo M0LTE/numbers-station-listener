@@ -13,10 +13,13 @@ import (
 // Config is the whole runtime configuration. See docs/deploy.md for the
 // variable list.
 type Config struct {
-	Listen    string // NSL_LISTEN, default ":8080"
-	PublicURL string // NSL_PUBLIC_URL, the site's own URL (for User-Agent and links)
-	Contact   string // NSL_CONTACT, how operators reach us (User-Agent)
-	DataDir   string // NSL_DATA_DIR, snapshots; empty disables persistence
+	Listen string // NSL_LISTEN, default ":8080"
+	// RedirectListen, if set (e.g. ":80"), serves a plain redirect to the
+	// same host on Listen's port, so http://host/ works on the LAN.
+	RedirectListen string // NSL_REDIRECT_LISTEN
+	PublicURL      string // NSL_PUBLIC_URL, the site's own URL (for User-Agent and links)
+	Contact        string // NSL_CONTACT, how operators reach us (User-Agent)
+	DataDir        string // NSL_DATA_DIR, snapshots; empty disables persistence
 
 	StationsFile string // NSL_STATIONS_FILE, override the embedded catalogue
 
@@ -39,6 +42,11 @@ type Config struct {
 	ProbeEvery   time.Duration // NSL_PROBE_EVERY, default 60s, floor 30s
 
 	RankWeights string // NSL_RANK_WEIGHTS, JSON, optional
+
+	// PSKReporter turns on the PSKReporter MQTT path-open hint. It also
+	// sets the hint's ranking weight to 0.1 unless NSL_RANK_WEIGHTS says
+	// otherwise.
+	PSKReporter bool // NSL_PSKR, default true
 
 	// AdminNets may reach /admin and /metrics. Requests that arrived through
 	// Cloudflare (Cf-Connecting-Ip set) never may.
@@ -71,6 +79,7 @@ func FromEnv() (Config, error) {
 func parse(get func(string) string) (Config, error) {
 	c := Config{
 		Listen:           str(get, "NSL_LISTEN", ":8080"),
+		RedirectListen:   get("NSL_REDIRECT_LISTEN"),
 		PublicURL:        get("NSL_PUBLIC_URL"),
 		Contact:          str(get, "NSL_CONTACT", "M0LTE"),
 		DataDir:          get("NSL_DATA_DIR"),
@@ -101,6 +110,8 @@ func parse(get func(string) string) (Config, error) {
 	c.ProbeTopK, e = integer(get, "NSL_PROBE_TOP_K", 5)
 	errs(e)
 	c.ProbeEnabled, e = boolean(get, "NSL_PROBE", true)
+	errs(e)
+	c.PSKReporter, e = boolean(get, "NSL_PSKR", true)
 	errs(e)
 	for _, s := range strings.Split(get("NSL_RECEIVER_ALLOW"), ",") {
 		if s = strings.TrimSpace(s); s != "" {

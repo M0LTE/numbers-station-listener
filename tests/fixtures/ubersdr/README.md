@@ -35,6 +35,6 @@ There is no file header and no padding. The record wrapper is ours; the payloads
 ## What the captures confirmed
 
 - Audio v4 Opus frames: first byte is the flags byte (0x00 to 0x03). The very first frame carried a timestamp of 0, then the second frame resynchronised with the real GPS time; after that the timestamp deltas are 20,000,000 ns (20 ms) apart. 2 of 251 frames had the metadata flag, 52 had the quality flag, 197 had neither. Average header 5.9 bytes.
-- Every Opus payload has TOC config 9: SILK, mediumband, 20 ms frame, mono, one frame per packet, at a 12 kHz session rate. Payloads were 97 to 129 bytes (about 110 average).
+- Every Opus payload has TOC config 5: SILK, mediumband, 20 ms frame, mono, one frame per packet, at a 12 kHz session rate. Payloads were 97 to 129 bytes (about 110 average).
 - Audio v3 frames: 21-byte header, u64 timestamp, u32 sample rate 12000, u8 channels 1, f32 baseband power, f32 passband noise power (about -86 and -93 to -97 dBFS here), then Opus.
 - Spectrum v2: 1024 bins at 10 Hz/bin (10240 Hz span), scale ref -145.33 dB, step 0.25 dB on the first full frame, 10 frames per second, delta masks always 128 bytes with one value byte per set bit.
