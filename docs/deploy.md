@@ -19,7 +19,7 @@ scripts/deploy.sh                 # defaults to root@10.45.0.26
 scripts/deploy.sh root@otherhost
 ```
 
-It builds the frontend and a static binary, copies them over, installs the unit, keeps an existing `/etc/nsl/nsl.env`, restarts, and waits for `/healthz`.
+It refuses to run with uncommitted changes, so whatever is deployed is in the repo. It builds the frontend and a static binary, copies them over, installs the unit, keeps an existing `/etc/nsl/nsl.env`, restarts, and waits for `/healthz`.
 
 A Dockerfile is also provided (`docker build -t nsl . && docker run -p 8080:8080 -v nsl:/data nsl`) for hosting elsewhere.
 

@@ -6,7 +6,13 @@ target="${1:-root@10.45.0.26}"
 here="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$here"
 
-version="$(git describe --tags --always --dirty 2>/dev/null || echo dev)"
+# Only committed code is deployed, so what runs is always in the repo.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "refusing to deploy: uncommitted changes (commit first)" >&2
+  git status --short >&2
+  exit 1
+fi
+version="$(git describe --tags --always 2>/dev/null || echo dev)"
 ( cd web && npm ci --silent && npm run build --silent )
 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -X github.com/m0lte/numbers-station-listener/internal/config.Version=${version}" -o bin/nsl ./cmd/nsl
 
